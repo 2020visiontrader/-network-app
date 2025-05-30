@@ -30,6 +30,7 @@ export default function HomePage() {
         <div className="mt-12 text-sm text-gray-500">
           <p>✅ Deployed successfully on Netlify</p>
           <p>🚀 Ready for production use</p>
+          <p className="mt-2 text-xs">Last updated: {new Date().toLocaleDateString()}</p>
         </div>
       </div>
     </div>
