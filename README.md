@@ -60,3 +60,4 @@ The application uses the following main tables:
 - `travel_checkins`: User travel and location updates
 
 For detailed schema information, see `database/migrations/01_initial_schema.sql`.
+# -network-app
