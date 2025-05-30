@@ -8,6 +8,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "build:netlify": "netlify build",
+    "start:netlify": "netlify dev",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
     "deploy": "chmod +x scripts/deploy.sh && ./scripts/deploy.sh",
@@ -26,6 +28,7 @@
   "dependencies": {
     "@headlessui/react": "^1.7.17",
     "@heroicons/react": "^2.0.18",
+    "@netlify/next": "^1.4.9",
     "@supabase/auth-helpers-nextjs": "^0.10.0",
     "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "^2.26.0",
