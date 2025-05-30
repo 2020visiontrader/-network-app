@@ -1,0 +1,8 @@
+# Netlify redirects for Next.js App Router
+# Handle dynamic routes and API endpoints
+
+# API routes
+/api/* /.netlify/functions/___netlify-handler 200
+
+# Catch-all for client-side routing
+/* /index.html 200
