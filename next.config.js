@@ -1,11 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  output: 'standalone',
   images: {
     domains: ['localhost'],
-    unoptimized: true
   },
+  // Netlify configuration
+  trailingSlash: false,
 };
 
 module.exports = nextConfig;
