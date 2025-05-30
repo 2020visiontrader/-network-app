@@ -1,38 +1,7 @@
 'use client'
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import createClient from '@/lib/supabase';
+import Link from 'next/link'
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const router = useRouter();
-  const supabase = createClient();
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setLoading(true);
-
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) throw error;
-
-      router.push('/dashboard');
-    } catch (error) {
-      setError(error instanceof Error ? error.message : 'An error occurred');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <main className="min-h-screen bg-black text-white flex flex-col lg:flex-row items-center justify-center px-6 lg:px-24 relative overflow-hidden">
       {/* Glows */}
@@ -52,6 +21,7 @@ export default function LoginPage() {
           <li>💼 Track connections, check-ins, and conversation history</li>
           <li>🧠 Get smart intros based on niche and energy match</li>
           <li>🌍 Join local events and mastermind sessions</li>
+
         </ul>
 
         <p className="text-purple-400 text-sm">Not a member yet? <Link href="/signup" className="underline">Request access</Link></p>
@@ -66,29 +36,14 @@ export default function LoginPage() {
           <span className="text-green-500 text-xs mt-1">● Network Available</span>
         </div>
 
-        {/* Error Display */}
-        {error && (
-          <div className="bg-red-900/30 border border-red-500/30 text-red-400 px-4 py-3 rounded-lg mb-6">
-            <div className="flex items-center space-x-2">
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-              </svg>
-              <span className="text-sm">Authentication failed: {error}</span>
-            </div>
-          </div>
-        )}
-
         {/* FORM */}
-        <form className="space-y-6" onSubmit={handleLogin}>
+        <form className="space-y-6">
           <div>
             <label htmlFor="email" className="block text-sm mb-1 text-gray-300">Email</label>
             <input
               id="email"
               type="email"
               placeholder="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
               className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm placeholder-gray-500"
             />
           </div>
@@ -98,26 +53,15 @@ export default function LoginPage() {
               id="password"
               type="password"
               placeholder="Enter your password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
               className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm placeholder-gray-500"
             />
           </div>
 
           <button
             type="submit"
-            disabled={loading}
-            className="w-full bg-gradient-to-r from-purple-600 to-indigo-500 hover:from-purple-700 hover:to-indigo-600 transition px-4 py-3 rounded-xl font-semibold text-white shadow-md disabled:opacity-50"
+            className="w-full bg-gradient-to-r from-purple-600 to-indigo-500 hover:from-purple-700 hover:to-indigo-600 transition px-4 py-3 rounded-xl font-semibold text-white shadow-md"
           >
-            {loading ? (
-              <div className="flex items-center justify-center space-x-2">
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                <span>Establishing connection...</span>
-              </div>
-            ) : (
-              'Connect to Network'
-            )}
+            Connect to Network
           </button>
         </form>
       </div>
