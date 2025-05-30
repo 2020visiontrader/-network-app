@@ -1,0 +1,56 @@
+{
+  "name": "Network – Relationship OS",
+  "short_name": "Network",
+  "description": "Build and manage your network with intention. Track relationships, plan meetups, and reconnect meaningfully.",
+  "start_url": "/dashboard?demo=true",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#4E46E5",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "en",
+  "categories": ["productivity", "social", "business"],
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "View your network dashboard",
+      "url": "/dashboard?demo=true",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Contacts",
+      "short_name": "Contacts",
+      "description": "Manage your contacts",
+      "url": "/contacts?demo=true",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Coffee Chats",
+      "short_name": "Coffee",
+      "description": "Schedule coffee chats",
+      "url": "/coffee-chats?demo=true",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
