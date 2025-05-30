@@ -1,53 +1,34 @@
-'use client';
-
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-
 export default function Home() {
-  const router = useRouter();
-
-  // Simple redirect after component mounts
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      router.push('/login');
-    }, 2000);
-
-    return () => clearTimeout(timer);
-  }, [router]);
-
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center">
+    <div className="min-h-screen bg-black text-white flex items-center justify-center">
       <div className="text-center space-y-6">
-        <div className="w-16 h-16 bg-accent rounded-hive flex items-center justify-center mx-auto shadow-glow">
+        <div className="w-16 h-16 bg-purple-600 rounded-lg flex items-center justify-center mx-auto">
           <span className="text-white text-2xl">⬢</span>
         </div>
 
         <div>
-          <h1 className="text-4xl font-bold text-text mb-2">Network</h1>
-          <p className="text-subtle">Professional Relationship Management Platform</p>
+          <h1 className="text-4xl font-bold mb-2">Network</h1>
+          <p className="text-gray-400">Professional Relationship Management Platform</p>
         </div>
 
         <div className="space-y-4">
-          <p className="text-sm text-subtle">Redirecting to login...</p>
-
           <div className="flex space-x-4 justify-center">
-            <Link
+            <a
               href="/login"
-              className="btn-mobile-primary px-6 py-3"
+              className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg transition-colors"
             >
               Sign In
-            </Link>
-            <Link
+            </a>
+            <a
               href="/signup"
-              className="btn-mobile-secondary px-6 py-3"
+              className="bg-gray-700 hover:bg-gray-600 text-white px-6 py-3 rounded-lg transition-colors"
             >
               Sign Up
-            </Link>
+            </a>
           </div>
         </div>
 
-        <div className="text-xs text-subtle">
+        <div className="text-xs text-gray-500">
           <p>🚀 Deployed successfully on Vercel</p>
           <p>🔮 AI features coming soon</p>
         </div>
