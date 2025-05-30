@@ -5,13 +5,3 @@
 [build.environment]
   NODE_VERSION = "18"
   NEXT_TELEMETRY_DISABLED = "1"
-
-[functions]
-  directory = ".netlify/functions"
-
-[dev]
-  command = "next dev"
-  port = 3000
-
-[[plugins]]
-  package = "@netlify/next"
