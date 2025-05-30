@@ -4,7 +4,7 @@ const nextConfig = {
   images: {
     domains: ['localhost'],
   },
-  // Netlify configuration
+  // Netlify configuration for Next.js runtime
   trailingSlash: false,
 };
 
