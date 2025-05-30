@@ -1,38 +1,26 @@
-import Link from 'next/link';
+'use client'
+import Link from 'next/link'
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-black text-white flex items-center justify-center">
-      <div className="text-center space-y-6 max-w-2xl mx-auto px-4">
-        <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">
-          Network
-        </h1>
-        <h2 className="text-2xl font-semibold text-gray-200">
-          Professional Relationship Management Platform
-        </h2>
-        <p className="text-gray-400 text-lg">
-          Build, maintain, and strengthen your professional network with intelligent relationship management.
-        </p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mt-8">
-          <Link
-            href="/login"
-            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold transition-colors w-full sm:w-auto"
-          >
-            Login
-          </Link>
-          <Link
-            href="/signup"
-            className="bg-gray-700 hover:bg-gray-600 text-white px-8 py-3 rounded-lg font-semibold transition-colors w-full sm:w-auto"
-          >
-            Sign Up
-          </Link>
-        </div>
-        <div className="mt-12 text-sm text-gray-500">
-          <p>✅ Deployed successfully on Netlify</p>
-          <p>🚀 Ready for production use</p>
-          <p className="mt-2 text-xs">Last updated: {new Date().toLocaleDateString()}</p>
-        </div>
+    <main className="min-h-screen bg-black text-white flex flex-col items-center justify-center px-6">
+      <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent mb-4">
+        Network
+      </h1>
+      <p className="text-gray-400 text-lg mb-8 text-center max-w-xl">
+        Your intelligent relationship OS. Build connections, track interactions, and discover events tailored to your niche.
+      </p>
+      <div className="flex flex-wrap gap-4">
+        <Link href="/login" className="bg-purple-600 px-5 py-3 rounded-xl hover:bg-purple-700 transition">
+          Log In
+        </Link>
+        <Link href="/dashboard" className="bg-gray-800 px-5 py-3 rounded-xl hover:bg-gray-700 transition">
+          Go to Dashboard
+        </Link>
+        <Link href="/hive" className="border border-purple-600 text-purple-400 px-5 py-3 rounded-xl hover:bg-purple-900/30 transition">
+          Explore Hive
+        </Link>
       </div>
-    </div>
-  );
+    </main>
+  )
 }
