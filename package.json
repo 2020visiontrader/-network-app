@@ -1,0 +1,50 @@
+{
+  "name": "network-app",
+  "version": "1.0.0",
+  "description": "A relationship management platform for maintaining and strengthening personal and professional connections",
+  "main": "index.js",
+  "scripts": {
+    "setup-db": "ts-node src/setupDatabaseAlt.ts",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "type-check": "tsc --noEmit",
+    "deploy": "chmod +x scripts/deploy.sh && ./scripts/deploy.sh",
+    "deploy:vercel": "chmod +x scripts/deploy.sh && ./scripts/deploy.sh vercel",
+    "deploy:netlify": "chmod +x scripts/deploy.sh && ./scripts/deploy.sh netlify",
+    "deploy:manual": "chmod +x scripts/deploy.sh && ./scripts/deploy.sh manual"
+  },
+  "keywords": [
+    "networking",
+    "relationships",
+    "contacts",
+    "reminders"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@headlessui/react": "^1.7.17",
+    "@heroicons/react": "^2.0.18",
+    "@supabase/auth-helpers-nextjs": "^0.7.4",
+    "@supabase/supabase-js": "^2.26.0",
+    "@types/node": "^18.16.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "autoprefixer": "^10.4.14",
+    "dotenv": "^16.3.1",
+    "next": "^13.4.7",
+    "node-fetch": "^3.3.1",
+    "postcss": "^8.4.24",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "tailwindcss": "^3.3.2",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.1.3"
+  },
+  "devDependencies": {
+    "eslint": "9.27.0",
+    "eslint-config-next": "15.3.3",
+    "supabase": "^2.23.4"
+  }
+}
