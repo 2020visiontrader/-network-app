@@ -1,36 +1,41 @@
+import Link from 'next/link';
+
 export default function Home() {
   return (
-    <div className="min-h-screen bg-black text-white flex items-center justify-center">
+    <div className="min-h-screen bg-background flex items-center justify-center">
       <div className="text-center space-y-6">
-        <div className="w-16 h-16 bg-purple-600 rounded-lg flex items-center justify-center mx-auto">
+        <div className="w-16 h-16 bg-accent rounded-hive flex items-center justify-center mx-auto shadow-glow">
           <span className="text-white text-2xl">⬢</span>
         </div>
 
         <div>
-          <h1 className="text-4xl font-bold mb-2">Network</h1>
-          <p className="text-gray-400">Professional Relationship Management Platform</p>
+          <h1 className="text-4xl font-bold text-text mb-2">Network</h1>
+          <p className="text-subtle">Professional Relationship Management Platform</p>
         </div>
 
         <div className="space-y-4">
+          <p className="text-sm text-subtle">Welcome to your relationship OS</p>
+
           <div className="flex space-x-4 justify-center">
-            <a
+            <Link
               href="/login"
-              className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg transition-colors"
+              className="btn-mobile-primary px-6 py-3"
             >
               Sign In
-            </a>
-            <a
+            </Link>
+            <Link
               href="/signup"
-              className="bg-gray-700 hover:bg-gray-600 text-white px-6 py-3 rounded-lg transition-colors"
+              className="btn-mobile-secondary px-6 py-3"
             >
               Sign Up
-            </a>
+            </Link>
           </div>
         </div>
 
-        <div className="text-xs text-gray-500">
+        <div className="text-xs text-subtle">
           <p>🚀 Deployed successfully on Vercel</p>
           <p>🔮 AI features coming soon</p>
+          <p>🧠 Mastermind sessions ready</p>
         </div>
       </div>
     </div>
