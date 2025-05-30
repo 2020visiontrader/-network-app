@@ -1,0 +1,22 @@
+# Network App Environment Variables for Vercel Import
+# Copy and paste these into Vercel's environment variables section
+# OR use the bulk import feature in Vercel
+
+# Supabase Configuration
+NEXT_PUBLIC_SUPABASE_URL=https://gbhmyeicfupaojyrynvg.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdiaG15ZWljZnVwYW9qeXJ5bnZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDcwNTI3NzEsImV4cCI6MjA2MjYyODc3MX0.4PmfAqmcnPoSw2DW0kiwzNQyNpmpWvRW9C-2kLxSqOE
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdiaG15ZWljZnVwYW9qeXJ5bnZnIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0NzA1Mjc3MSwiZXhwIjoyMDYyNjI4NzcxfQ.p_L2uiZfgnArSkeoZS6CkCoLu2S04sF3BOaSzYGxMik
+
+# App Configuration
+NEXT_PUBLIC_APP_URL=https://network-pck2wgl3y-2020visiontraders-projects.vercel.app
+NODE_ENV=production
+
+# Optional: Analytics (uncomment if you want to add these later)
+# NEXT_PUBLIC_GA_ID=your_google_analytics_id
+# SENTRY_DSN=your_sentry_dsn
+
+# Optional: External API Keys (for future AI features)
+# EVENTBRITE_API_KEY=your_eventbrite_api_key
+# MEETUP_API_KEY=your_meetup_api_key
+# LINKEDIN_CLIENT_ID=your_linkedin_client_id
+# LINKEDIN_CLIENT_SECRET=your_linkedin_client_secret
