@@ -4,8 +4,9 @@ import { cookies } from 'next/headers';
 
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
+  const params = await context.params;
   const supabase = createRouteHandlerClient({ cookies });
 
   try {
@@ -34,8 +35,9 @@ export async function PUT(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
+  const params = await context.params;
   const supabase = createRouteHandlerClient({ cookies });
 
   try {
@@ -57,4 +59,4 @@ export async function DELETE(
     console.error('Error deleting contact:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
-} 
+}

@@ -2,13 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import createClient from '@/lib/supabase';
+import { supabase } from '@/lib/supabase';
 
 export default function AuthCallback() {
   const router = useRouter();
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [message, setMessage] = useState('');
-  const supabase = createClient();
+  // supabase is already imported
 
   useEffect(() => {
     const handleAuthCallback = async () => {
@@ -32,7 +32,7 @@ export default function AuthCallback() {
           if (data.user) {
             setStatus('success');
             setMessage('Email confirmed successfully! Redirecting to dashboard...');
-            
+
             // Redirect to dashboard after a short delay
             setTimeout(() => {
               router.push('/dashboard');
@@ -41,7 +41,7 @@ export default function AuthCallback() {
         } else {
           // Try to get session from URL parameters (alternative method)
           const { data, error } = await supabase.auth.getSession();
-          
+
           if (error) {
             throw error;
           }
@@ -76,20 +76,20 @@ export default function AuthCallback() {
             {status === 'error' && 'Confirmation Failed'}
           </h2>
         </div>
-        
+
         <div className="mt-4">
           {status === 'loading' && (
             <div className="flex justify-center">
               <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
             </div>
           )}
-          
+
           {status === 'success' && (
             <div className="rounded-md bg-green-50 p-4">
               <div className="text-sm text-green-700">{message}</div>
             </div>
           )}
-          
+
           {status === 'error' && (
             <div className="rounded-md bg-red-50 p-4">
               <div className="text-sm text-red-700">{message}</div>

@@ -1,0 +1,245 @@
+'use client'
+import { useState } from 'react'
+import Link from 'next/link'
+import OnboardingProgress from '@/components/OnboardingProgress'
+
+const TIME_SLOTS = [
+  '9:00 AM', '10:00 AM', '11:00 AM', '12:00 PM',
+  '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM'
+]
+
+const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+
+const MENTORSHIP_AREAS = [
+  'Career Growth', 'Fundraising', 'Product Strategy', 'Team Building',
+  'Marketing', 'Sales', 'Technical Skills', 'Leadership', 'Work-Life Balance'
+]
+
+export default function OnboardingConnect() {
+  const [formData, setFormData] = useState({
+    city: '',
+    timezone: '',
+    availableDays: [] as string[],
+    preferredTimes: [] as string[],
+    mentorshipRole: 'both' as 'seeking' | 'offering' | 'both',
+    mentorshipAreas: [] as string[],
+    meetingPreference: 'both' as 'virtual' | 'in-person' | 'both'
+  })
+
+  const toggleSelection = (item: string, field: keyof typeof formData) => {
+    const currentList = formData[field] as string[]
+    if (currentList.includes(item)) {
+      setFormData(prev => ({
+        ...prev,
+        [field]: currentList.filter(i => i !== item)
+      }))
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [field]: [...currentList, item]
+      }))
+    }
+  }
+
+  return (
+    <div className="flex-1 flex flex-col">
+      <OnboardingProgress 
+        currentStep={4} 
+        totalSteps={6} 
+        stepTitle="Connection Preferences" 
+      />
+      
+      <div className="flex-1 flex items-center justify-center px-6 pb-20">
+        <div className="max-w-3xl w-full bg-zinc-900/70 border border-zinc-800 rounded-2xl shadow-xl p-8 backdrop-blur-md">
+          
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold text-white mb-2">How You Like to Connect</h2>
+            <p className="text-gray-400">Set your availability and mentorship preferences</p>
+          </div>
+
+          <div className="space-y-8">
+            {/* Location & Timezone */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Primary City
+                </label>
+                <input
+                  type="text"
+                  value={formData.city}
+                  onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
+                  placeholder="San Francisco, CA"
+                  className="w-full px-4 py-3 bg-zinc-800/50 border border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-white placeholder-gray-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Timezone
+                </label>
+                <select
+                  value={formData.timezone}
+                  onChange={(e) => setFormData(prev => ({ ...prev, timezone: e.target.value }))}
+                  className="w-full px-4 py-3 bg-zinc-800/50 border border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-white"
+                >
+                  <option value="">Select timezone</option>
+                  <option value="PST">Pacific (PST)</option>
+                  <option value="MST">Mountain (MST)</option>
+                  <option value="CST">Central (CST)</option>
+                  <option value="EST">Eastern (EST)</option>
+                  <option value="GMT">GMT</option>
+                  <option value="CET">Central European (CET)</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Meeting Preference */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-4">
+                Meeting Preference
+              </label>
+              <div className="flex space-x-4">
+                {[
+                  { value: 'virtual', label: '💻 Virtual Only' },
+                  { value: 'in-person', label: '🤝 In-Person Only' },
+                  { value: 'both', label: '🌐 Both Virtual & In-Person' }
+                ].map(option => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => setFormData(prev => ({ ...prev, meetingPreference: option.value as any }))}
+                    className={`flex-1 px-4 py-3 rounded-lg border text-sm transition ${
+                      formData.meetingPreference === option.value
+                        ? 'bg-purple-600 text-white border-purple-400'
+                        : 'bg-zinc-800/50 text-gray-400 border-zinc-700 hover:border-purple-500'
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Available Days */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-4">
+                Available Days
+              </label>
+              <div className="grid grid-cols-4 md:grid-cols-7 gap-2">
+                {DAYS.map(day => (
+                  <button
+                    key={day}
+                    type="button"
+                    onClick={() => toggleSelection(day, 'availableDays')}
+                    className={`px-3 py-2 rounded-lg border text-sm transition ${
+                      formData.availableDays.includes(day)
+                        ? 'bg-purple-600 text-white border-purple-400'
+                        : 'bg-zinc-800/50 text-gray-400 border-zinc-700 hover:border-purple-500'
+                    }`}
+                  >
+                    {day.slice(0, 3)}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Preferred Times */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-4">
+                Preferred Times
+              </label>
+              <div className="grid grid-cols-3 md:grid-cols-5 gap-2">
+                {TIME_SLOTS.map(time => (
+                  <button
+                    key={time}
+                    type="button"
+                    onClick={() => toggleSelection(time, 'preferredTimes')}
+                    className={`px-3 py-2 rounded-lg border text-sm transition ${
+                      formData.preferredTimes.includes(time)
+                        ? 'bg-yellow-500 text-black border-yellow-400'
+                        : 'bg-zinc-800/50 text-gray-400 border-zinc-700 hover:border-yellow-500'
+                    }`}
+                  >
+                    {time}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Mentorship */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-4">
+                Mentorship Role
+              </label>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                {[
+                  { value: 'seeking', label: '🌱 Seeking Mentorship', desc: 'Looking for guidance and advice' },
+                  { value: 'offering', label: '🎯 Offering Mentorship', desc: 'Ready to guide others' },
+                  { value: 'both', label: '🔄 Both', desc: 'Open to learning and teaching' }
+                ].map(option => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => setFormData(prev => ({ ...prev, mentorshipRole: option.value as any }))}
+                    className={`p-4 rounded-lg border text-left transition ${
+                      formData.mentorshipRole === option.value
+                        ? 'bg-purple-600/20 text-white border-purple-400'
+                        : 'bg-zinc-800/50 text-gray-400 border-zinc-700 hover:border-purple-500'
+                    }`}
+                  >
+                    <div className="font-medium text-sm">{option.label}</div>
+                    <div className="text-xs mt-1 opacity-75">{option.desc}</div>
+                  </button>
+                ))}
+              </div>
+
+              {/* Mentorship Areas */}
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Mentorship Areas
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {MENTORSHIP_AREAS.map(area => (
+                    <button
+                      key={area}
+                      type="button"
+                      onClick={() => toggleSelection(area, 'mentorshipAreas')}
+                      className={`px-3 py-2 rounded-full border text-sm transition ${
+                        formData.mentorshipAreas.includes(area)
+                          ? 'bg-yellow-500 text-black border-yellow-400'
+                          : 'bg-zinc-800/50 text-gray-400 border-zinc-700 hover:border-yellow-500'
+                      }`}
+                    >
+                      {area}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Navigation */}
+          <div className="flex justify-between items-center mt-8 pt-6 border-t border-zinc-700">
+            <Link 
+              href="/onboarding/expertise"
+              className="px-6 py-2 text-gray-400 hover:text-white transition"
+            >
+              ← Back
+            </Link>
+            
+            <div className="flex space-x-4">
+              <button className="px-6 py-2 text-gray-400 hover:text-white transition">
+                Save & Exit
+              </button>
+              <Link 
+                href="/onboarding/import"
+                className="px-8 py-3 bg-gradient-to-r from-purple-600 to-yellow-500 hover:from-purple-700 hover:to-yellow-600 transition rounded-lg font-semibold text-white"
+              >
+                Continue →
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}

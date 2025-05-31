@@ -1,9 +1,14 @@
 'use client'
 import Link from 'next/link'
+import HiveHexGrid from '@/components/HiveHexGrid'
 
 export default function LoginPage() {
   return (
     <main className="min-h-screen bg-black text-white flex flex-col lg:flex-row items-center justify-center px-6 lg:px-24 relative overflow-hidden">
+
+      {/* Interactive Hive Background */}
+      <HiveHexGrid />
+
       {/* Glows */}
       <div className="absolute -top-32 -left-32 w-[600px] h-[600px] rounded-full bg-purple-800 opacity-20 blur-3xl animate-pulse"></div>
       <div className="absolute top-1/4 right-0 w-[400px] h-[400px] bg-fuchsia-700 opacity-10 blur-2xl rotate-45"></div>

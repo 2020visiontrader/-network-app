@@ -1,403 +1,141 @@
-'use client';
+'use client'
+import { useState } from 'react'
+import HiveHexGrid from '@/components/HiveHexGrid'
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import createClient from '@/lib/supabase';
-import { Database } from '@/lib/database.types';
+const INDUSTRIES = [
+  'Tech', 'AI', 'Web3', 'Finance', 'Ecommerce', 'SaaS', 'Education',
+  'Wellness', 'Events', 'Fashion', 'Real Estate', 'Marketing', 'Creative',
+  'Legal', 'Politics', 'Music Business', 'Content Creation', 'Venture Capital',
+  'Coaching', 'Nonprofit'
+]
 
-type Role = Database['public']['Tables']['users']['Row']['role'];
+const HOBBIES = [
+  'Travel', 'Photography', 'Filmmaking', 'Fitness', 'Gaming', 'Meditation',
+  'Cooking', 'Writing', 'Reading', 'Painting', 'Spirituality', 'Comedy',
+  'Adventure Sports', 'Nature', 'Volunteering', 'Music', 'Design', 'Podcasting'
+]
 
-export default function SignUpPage() {
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    fullName: '',
-    preferredName: '',
-    role: 'member' as Role,
-    city: '',
-    niche: '',
-    linkedinUrl: '',
-    websiteUrl: '',
-  });
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [showDevBypass, setShowDevBypass] = useState(false);
-  const router = useRouter();
-  const supabase = createClient();
+export default function SignupPage() {
+  const [selectedIndustries, setIndustries] = useState<string[]>([])
+  const [selectedHobbies, setHobbies] = useState<string[]>([])
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setLoading(true);
-
-    try {
-      const { data, error: signUpError } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-        options: {
-          data: {
-            full_name: formData.fullName,
-            preferred_name: formData.preferredName,
-            role: formData.role,
-            city: formData.city,
-            niche: formData.niche,
-            linkedin_url: formData.linkedinUrl,
-            website_url: formData.websiteUrl,
-          },
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
-        },
-      });
-
-      if (signUpError) throw signUpError;
-
-      // Check if user was created successfully
-      if (data.user) {
-        // Try to create user profile in users table, but don't fail if table doesn't exist
-        try {
-          const { error: profileError } = await supabase
-            .from('users')
-            .insert([
-              {
-                id: data.user.id,
-                email: formData.email,
-                full_name: formData.fullName,
-                preferred_name: formData.preferredName,
-                role: formData.role,
-                city: formData.city,
-                niche: formData.niche,
-                linkedin_url: formData.linkedinUrl,
-                website_url: formData.websiteUrl,
-              },
-            ]);
-
-          if (profileError) {
-            console.warn('Could not create user profile:', profileError.message);
-            // Don't throw error here - user auth was successful
-          }
-        } catch (profileError) {
-          console.warn('User profile creation failed:', profileError);
-          // Continue anyway - the auth user was created successfully
-        }
-
-        // Check if email confirmation is required
-        if (data.user && !data.session) {
-          // Email confirmation required
-          setError('Account created successfully! Please check your email to verify your account. The confirmation link will redirect you back to this app.');
-          setShowDevBypass(true);
-        } else if (data.session) {
-          // User is already logged in (email confirmation disabled)
-          setError('Account created successfully! Redirecting to dashboard...');
-          setTimeout(() => {
-            router.push('/dashboard');
-          }, 2000);
-        } else {
-          setError('Account created successfully!');
-        }
-      }
-    } catch (error) {
-      setError(error instanceof Error ? error.message : 'An error occurred');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleDevBypass = async () => {
-    setLoading(true);
-    try {
-      // For development: use admin API to confirm user email
-      const response = await fetch('/api/admin/confirm-user', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: formData.email,
-        }),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || 'Failed to confirm user');
-      }
-
-      // Now try to sign in
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: formData.email,
-        password: formData.password,
-      });
-
-      if (signInError) {
-        setError('Email confirmed but login failed. Please try logging in manually.');
-      } else {
-        setError('Development bypass successful! Redirecting to dashboard...');
-        setTimeout(() => {
-          router.push('/dashboard');
-        }, 1000);
-      }
-    } catch (error) {
-      setError(`Development bypass failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const toggle = (list: string[], setList: any, value: string) => {
+    setList((prev: string[]) =>
+      prev.includes(value)
+        ? prev.filter(v => v !== value)
+        : [...prev, value].slice(0, 3)
+    )
+  }
 
   return (
-    <div className="min-h-screen bg-background gradient-mesh flex items-center justify-center py-8 px-4 safe-area-top safe-area-bottom">
-      <div className="relative w-full max-w-sm">
-        {/* Hivemind Header */}
-        <div className="text-center mb-8 animate-fade-in">
-          <div className="mx-auto w-16 h-16 gradient-hive rounded-hive flex items-center justify-center mb-6 shadow-glow pulse-hive">
-            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" className="text-white">
-              <circle cx="10" cy="10" r="3" fill="currentColor"/>
-              <circle cx="22" cy="10" r="3" fill="currentColor"/>
-              <circle cx="16" cy="22" r="3" fill="currentColor"/>
-              <line x1="10" y1="10" x2="22" y2="10" stroke="currentColor" strokeWidth="2"/>
-              <line x1="10" y1="10" x2="16" y2="22" stroke="currentColor" strokeWidth="2"/>
-              <line x1="22" y1="10" x2="16" y2="22" stroke="currentColor" strokeWidth="2"/>
-            </svg>
+    <main className="min-h-screen bg-gradient-to-b from-black via-zinc-900 to-black text-white flex flex-col items-center justify-center px-6 py-20 relative overflow-hidden">
+
+      {/* Interactive Hive Background */}
+      <HiveHexGrid />
+
+      {/* Background glow */}
+      <div className="absolute -top-40 -left-40 w-[600px] h-[600px] bg-purple-800 opacity-20 blur-3xl rounded-full animate-pulse" />
+      <div className="absolute top-1/4 right-0 w-[400px] h-[400px] bg-indigo-600 opacity-10 blur-2xl rotate-45" />
+
+      {/* Signup Card */}
+      <div className="relative z-10 max-w-3xl w-full bg-zinc-900 bg-opacity-60 border border-zinc-800 rounded-2xl shadow-lg p-10 backdrop-blur-sm">
+        <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-500 to-indigo-400 text-transparent bg-clip-text mb-2 text-center">
+          Shape the Network
+        </h1>
+        <p className="text-gray-400 text-sm text-center mb-10 max-w-xl mx-auto">
+          This isn't another social feed. Network is a private, intelligent ecosystem built for depth.
+          Tell us who you are — we'll connect you with aligned people, city hives, and moments that matter.
+        </p>
+
+        <form className="space-y-6">
+          {/* Full Name */}
+          <div>
+            <label htmlFor="name" className="text-sm block">Full Name</label>
+            <input type="text" id="name" placeholder="Jordan Oram"
+              className="w-full px-4 py-3 mt-1 bg-zinc-800 border border-zinc-700 rounded-lg placeholder-gray-500 text-sm" />
           </div>
-          <h1 className="heading-lg-mobile mb-2 text-text">Join the Network</h1>
-          <p className="body-base-mobile text-subtle">Initialize your neural profile</p>
 
-          {/* Connection Status */}
-          <div className="flex items-center justify-center space-x-2 mt-3">
-            <div className="w-2 h-2 bg-accent2 rounded-full pulse-hive"></div>
-            <span className="text-xs text-subtle">Network Ready</span>
+          {/* Email */}
+          <div>
+            <label htmlFor="email" className="text-sm block">Email</label>
+            <input type="email" id="email" placeholder="you@example.com"
+              className="w-full px-4 py-3 mt-1 bg-zinc-800 border border-zinc-700 rounded-lg placeholder-gray-500 text-sm" />
           </div>
-        </div>
-        {/* Hivemind Signup Form */}
-        <div className="card-mobile border-accent/20 animate-slide-up">
-          <form className="space-y-5" onSubmit={handleSubmit}>
-            {error && (
-              <div className={`border rounded-hive px-4 py-3 animate-slide-down ${
-                error.includes('successfully')
-                  ? 'bg-accent2/10 border-accent2/30 text-accent2'
-                  : 'bg-error/10 border-error/30 text-error'
-              }`}>
-                <div className="flex items-center space-x-2">
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                  </svg>
-                  <span className="text-sm">{error}</span>
-                </div>
-              {showDevBypass && (
-                <div className="mt-3 space-y-2">
-                  <button
-                    onClick={handleDevBypass}
-                    disabled={loading}
-                    className="text-sm bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 disabled:opacity-50 mr-2"
-                  >
-                    {loading ? 'Bypassing...' : 'Skip Email Verification (Dev)'}
-                  </button>
-                  <button
-                    onClick={() => router.push('/dashboard?demo=true')}
-                    className="text-sm bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700"
-                  >
-                    Enter Demo Mode
-                  </button>
-                  <p className="text-xs text-gray-600 mt-1">
-                    For development only - bypasses email verification or try demo mode
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
-            <div className="space-y-4">
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-text mb-2">
-                  Neural ID
-                </label>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  className="input-field touch-target"
-                  placeholder="Enter your neural identifier"
-                />
-              </div>
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-text mb-2">
-                  Access Key
-                </label>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  autoComplete="new-password"
-                  required
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  className="input-field touch-target"
-                  placeholder="Enter your access key"
-                />
-              </div>
 
-              <div>
-                <label htmlFor="fullName" className="block text-sm font-medium text-text mb-2">
-                  Full Name
-                </label>
-                <input
-                  id="fullName"
-                  name="fullName"
-                  type="text"
-                  required
-                  value={formData.fullName}
-                  onChange={handleInputChange}
-                  className="input-field touch-target"
-                  placeholder="Enter your full name"
-                />
-              </div>
+          {/* LinkedIn */}
+          <div>
+            <label htmlFor="linkedin" className="text-sm block">LinkedIn URL</label>
+            <input type="url" id="linkedin" placeholder="https://linkedin.com/in/..."
+              className="w-full px-4 py-3 mt-1 bg-zinc-800 border border-zinc-700 rounded-lg placeholder-gray-500 text-sm" />
+          </div>
 
-              <div>
-                <label htmlFor="preferredName" className="block text-sm font-medium text-text mb-2">
-                  Preferred Name
-                </label>
-                <input
-                  id="preferredName"
-                  name="preferredName"
-                  type="text"
-                  value={formData.preferredName}
-                  onChange={handleInputChange}
-                  className="input-field touch-target"
-                  placeholder="How you'd like to be called (optional)"
-                />
-              </div>
+          {/* Website */}
+          <div>
+            <label htmlFor="website" className="text-sm block">Business / Project Website</label>
+            <input type="url" id="website" placeholder="https://yourproject.com"
+              className="w-full px-4 py-3 mt-1 bg-zinc-800 border border-zinc-700 rounded-lg placeholder-gray-500 text-sm" />
+          </div>
 
-              <div>
-                <label htmlFor="niche" className="block text-sm font-medium text-text mb-2">
-                  Neural Specialization
-                </label>
-                <select
-                  id="niche"
-                  name="niche"
-                  value={formData.niche}
-                  onChange={handleInputChange}
-                  className="input-field touch-target"
-                  required
+          {/* Industries */}
+          <div>
+            <label className="text-sm block mb-2">Your Industry (pick up to 3)</label>
+            <div className="flex flex-wrap gap-2">
+              {INDUSTRIES.map(industry => (
+                <button key={industry} type="button"
+                  onClick={() => toggle(selectedIndustries, setIndustries, industry)}
+                  className={`px-4 py-2 rounded-full border text-sm transition ${
+                    selectedIndustries.includes(industry)
+                      ? 'bg-purple-600 text-white border-purple-400'
+                      : 'bg-zinc-800 text-gray-400 border-zinc-700 hover:border-purple-500'
+                  }`}
                 >
-                  <option value="">Select your niche</option>
-                  <option value="Tech">Technology</option>
-                  <option value="Finance">Finance</option>
-                  <option value="Healthcare">Healthcare</option>
-                  <option value="Education">Education</option>
-                  <option value="Marketing">Marketing</option>
-                  <option value="Design">Design</option>
-                  <option value="Consulting">Consulting</option>
-                  <option value="Startup">Startup</option>
-                  <option value="Real Estate">Real Estate</option>
-                  <option value="Legal">Legal</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
-
-              <div>
-                <label htmlFor="role" className="block text-sm font-medium text-text mb-2">
-                  Network Role
-                </label>
-                <select
-                  id="role"
-                  name="role"
-                  value={formData.role}
-                  onChange={handleInputChange}
-                  className="input-field touch-target"
-                >
-                  <option value="member">Member</option>
-                  <option value="mentor">Mentor</option>
-                  <option value="mentee">Mentee</option>
-                  <option value="ambassador">Ambassador</option>
-                </select>
-              </div>
-
-              <div>
-                <label htmlFor="city" className="block text-sm font-medium text-text mb-2">
-                  Location Node
-                </label>
-                <input
-                  id="city"
-                  name="city"
-                  type="text"
-                  required
-                  value={formData.city}
-                  onChange={handleInputChange}
-                  className="input-field touch-target"
-                  placeholder="Enter your city"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="linkedinUrl" className="block text-sm font-medium text-text mb-2">
-                  LinkedIn Profile
-                </label>
-                <input
-                  id="linkedinUrl"
-                  name="linkedinUrl"
-                  type="url"
-                  value={formData.linkedinUrl}
-                  onChange={handleInputChange}
-                  className="input-field touch-target"
-                  placeholder="https://linkedin.com/in/yourname"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="websiteUrl" className="block text-sm font-medium text-text mb-2">
-                  Website (Optional)
-                </label>
-                <input
-                  id="websiteUrl"
-                  name="websiteUrl"
-                  type="url"
-                  value={formData.websiteUrl}
-                  onChange={handleInputChange}
-                  className="input-field touch-target"
-                  placeholder="https://yourbusiness.com"
-                />
-              </div>
+                  {industry}
+                </button>
+              ))}
             </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="btn-mobile-primary w-full"
-            >
-              {loading ? (
-                <div className="flex items-center justify-center space-x-2">
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  <span>Initializing neural profile...</span>
-                </div>
-              ) : (
-                <div className="flex items-center justify-center space-x-2">
-                  <span>Join Network</span>
-                  <div className="w-2 h-2 bg-white rounded-full pulse-hive"></div>
-                </div>
-              )}
-            </button>
-          </form>
-
-          <div className="mt-6 pt-6 border-t border-border text-center">
-            <Link
-              href="/login"
-              className="text-accent hover:text-accent-light font-medium transition-colors duration-300 touch-target inline-block"
-            >
-              Already connected? Sign in
-            </Link>
           </div>
-        </div>
+
+          {/* Hobbies */}
+          <div>
+            <label className="text-sm block mb-2 mt-6">Your Hobbies (pick up to 3)</label>
+            <div className="flex flex-wrap gap-2">
+              {HOBBIES.map(hobby => (
+                <button key={hobby} type="button"
+                  onClick={() => toggle(selectedHobbies, setHobbies, hobby)}
+                  className={`px-4 py-2 rounded-full border text-sm transition ${
+                    selectedHobbies.includes(hobby)
+                      ? 'bg-indigo-600 text-white border-indigo-400'
+                      : 'bg-zinc-800 text-gray-400 border-zinc-700 hover:border-indigo-500'
+                  }`}
+                >
+                  {hobby}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Reflective Question */}
+          <div className="mt-6">
+            <label htmlFor="dream" className="text-sm block mb-1">
+              If money was no object, where would you be, what would you be doing, and who would you be with?
+            </label>
+            <textarea
+              id="dream"
+              rows={4}
+              placeholder="Write freely here..."
+              className="w-full px-4 py-3 mt-1 bg-zinc-800 border border-zinc-700 rounded-lg placeholder-gray-500 text-sm"
+            ></textarea>
+          </div>
+
+          {/* Submit */}
+          <button
+            type="submit"
+            className="w-full mt-8 bg-gradient-to-r from-purple-600 to-indigo-500 hover:from-purple-700 hover:to-indigo-600 transition px-4 py-3 rounded-xl font-semibold text-white shadow-md"
+          >
+            Request Access
+          </button>
+        </form>
       </div>
-    </div>
-  );
+    </main>
+  )
 }
