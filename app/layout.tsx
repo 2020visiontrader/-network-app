@@ -20,14 +20,14 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
-  metadataBase: new URL('https://network-app.vercel.app'),
+  // Removed metadataBase URL referencing Vercel
   alternates: {
     canonical: '/',
   },
   openGraph: {
     title: 'Network – Relationship OS',
     description: 'Build and manage your network with intention. Track relationships, plan meetups, and reconnect meaningfully.',
-    url: 'https://network-app.vercel.app',
+    // Removed openGraph.url referencing Vercel
     siteName: 'Network',
     images: [
       {
