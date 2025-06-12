@@ -1,0 +1,25 @@
+{
+  "name": "network-founder-platform",
+  "version": "1.0.0",
+  "description": "Mobile networking platform for 250 startup founders (free tier)",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "build:netlify": "next build && cp -r public/* out/ && cp public/_redirects out/_redirects",
+    "start:netlify": "netlify dev",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@netlify/plugin-nextjs": "^4.41.0",
+    "next": "^13.4.7",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "@supabase/supabase-js": "^2.26.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.3.1",
+    "@types/react": "^18.2.12",
+    "typescript": "^5.1.3"
+  }
+}
