@@ -86,21 +86,6 @@ build_app() {
     print_status "Application built successfully"
 }
 
-# Deploy to Vercel
-deploy_vercel() {
-    print_info "Deploying to Vercel..."
-    
-    if ! command -v vercel &> /dev/null; then
-        print_info "Installing Vercel CLI..."
-        npm install -g vercel
-    fi
-    
-    print_info "Starting Vercel deployment..."
-    vercel --prod
-    
-    print_status "Deployed to Vercel successfully!"
-}
-
 # Deploy to Netlify
 deploy_netlify() {
     print_info "Deploying to Netlify..."
@@ -169,9 +154,6 @@ deploy() {
     
     # Deploy to specified platform
     case $platform in
-        "vercel")
-            deploy_vercel
-            ;;
         "netlify")
             deploy_netlify
             ;;
@@ -191,12 +173,10 @@ show_help() {
     echo "Usage: $0 [platform]"
     echo ""
     echo "Platforms:"
-    echo "  vercel    Deploy to Vercel (recommended)"
     echo "  netlify   Deploy to Netlify"
     echo "  manual    Build only (for manual deployment)"
     echo ""
     echo "Examples:"
-    echo "  $0 vercel     # Deploy to Vercel"
     echo "  $0 netlify    # Deploy to Netlify"
     echo "  $0 manual     # Build for manual deployment"
     echo "  $0            # Interactive mode"
@@ -207,28 +187,24 @@ show_help() {
 interactive_deploy() {
     echo ""
     echo "Select deployment platform:"
-    echo "1) Vercel (recommended)"
-    echo "2) Netlify"
-    echo "3) Manual build only"
-    echo "4) Help"
+    echo "1) Netlify"
+    echo "2) Manual build only"
+    echo "3) Help"
     echo ""
-    read -p "Enter your choice (1-4): " choice
+    read -p "Enter your choice (1-3): " choice
     
     case $choice in
         1)
-            deploy "vercel"
-            ;;
-        2)
             deploy "netlify"
             ;;
-        3)
+        2)
             deploy "manual"
             ;;
-        4)
+        3)
             show_help
             ;;
         *)
-            print_error "Invalid choice. Please select 1-4."
+            print_error "Invalid choice. Please select 1-3."
             interactive_deploy
             ;;
     esac

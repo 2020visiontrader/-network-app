@@ -89,6 +89,18 @@ export default function RootLayout({
         <AppProvider>
           {children}
         </AppProvider>
+
+        {/* Add error monitoring */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.onerror = function(msg, url, lineNo, columnNo, error) {
+                console.error('Client Error:', { msg, url, lineNo, columnNo, error });
+                return false;
+              };
+            `
+          }}
+        />
       </body>
     </html>
   )

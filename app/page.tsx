@@ -7,7 +7,7 @@ import LoginFormComponent from '@/components/auth/LoginFormComponent'
 import SignupFormComponent from '@/components/auth/SignupFormComponent'
 import { supabase } from '@/lib/supabase'
 
-export default function HomePage() {
+export default function Home() {
   const [isLogin, setIsLogin] = useState(true)
   const [checking, setChecking] = useState(true)
   const router = useRouter()
@@ -69,59 +69,62 @@ export default function HomePage() {
   }
 
   return (
-    <main className="min-h-screen bg-black text-white flex flex-col lg:flex-row items-center justify-center px-6 lg:px-24 relative overflow-hidden">
-      {/* Interactive Hive Background */}
-      <HiveHexGrid />
+    <div style={{ 
+      padding: 80,
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      gap: 20
+    }}>
+      <h1 className="text-4xl md:text-5xl font-extrabold mb-6 bg-gradient-to-r from-purple-500 to-indigo-400 text-transparent bg-clip-text">
+        Network for Founders
+      </h1>
+      <p className="text-gray-400 text-lg mb-6 max-w-xl">
+        Join an exclusive community of 250 verified startup founders. Mobile-first networking designed for builders:
+      </p>
+
+      <ul className="text-sm text-white space-y-3 mb-8 list-disc list-inside">
+        <li>☕ Book coffee chats with fellow founders (3/day limit)</li>
+        <li>🤝 Connect with founders in your industry or stage</li>
+        <li>📅 Join founder events, demo days, and workshops</li>
+        <li>📱 Real-time notifications for networking opportunities</li>
+        <li>🔐 Verified founder-only community (250 member cap)</li>
+      </ul>
+
+      <p className="text-xs text-gray-500 italic mb-6">
+        Direct onboarding for verified founders. Free tier limited to first 250 members.
+      </p>
+
+      <div className="flex space-x-4 text-sm">
+        <button
+          onClick={() => setIsLogin(true)}
+          className={`px-4 py-2 rounded-lg transition ${
+            isLogin ? 'text-purple-400 underline' : 'text-gray-400 hover:text-white'
+          }`}
+        >
+          Already a member? Sign in
+        </button>
+        <button
+          onClick={() => setIsLogin(false)}
+          className={`px-4 py-2 rounded-lg transition ${
+            !isLogin ? 'text-purple-400 underline' : 'text-gray-400 hover:text-white'
+          }`}
+        >
+          New to Network? Join now
+        </button>
+      </div>
 
       {/* Glows */}
       <div className="absolute -top-32 -left-32 w-[600px] h-[600px] rounded-full bg-purple-800 opacity-20 blur-3xl animate-pulse"></div>
       <div className="absolute top-1/4 right-0 w-[400px] h-[400px] bg-fuchsia-700 opacity-10 blur-2xl rotate-45"></div>
 
-      {/* LEFT SIDE — VALUE PROP */}
-      <div className="relative z-10 w-full lg:w-1/2 text-left py-12">
-        <h1 className="text-4xl md:text-5xl font-extrabold mb-6 bg-gradient-to-r from-purple-500 to-indigo-400 text-transparent bg-clip-text">
-          Network for Founders
-        </h1>
-        <p className="text-gray-400 text-lg mb-6 max-w-xl">
-          Join an exclusive community of 250 verified startup founders. Mobile-first networking designed for builders:
-        </p>
-
-        <ul className="text-sm text-white space-y-3 mb-8 list-disc list-inside">
-          <li>☕ Book coffee chats with fellow founders (3/day limit)</li>
-          <li>🤝 Connect with founders in your industry or stage</li>
-          <li>📅 Join founder events, demo days, and workshops</li>
-          <li>📱 Real-time notifications for networking opportunities</li>
-          <li>🔐 Verified founder-only community (250 member cap)</li>
-        </ul>
-
-        <p className="text-xs text-gray-500 italic mb-6">
-          Direct onboarding for verified founders. Free tier limited to first 250 members.
-        </p>
-
-        <div className="flex space-x-4 text-sm">
-          <button
-            onClick={() => setIsLogin(true)}
-            className={`px-4 py-2 rounded-lg transition ${
-              isLogin ? 'text-purple-400 underline' : 'text-gray-400 hover:text-white'
-            }`}
-          >
-            Already a member? Sign in
-          </button>
-          <button
-            onClick={() => setIsLogin(false)}
-            className={`px-4 py-2 rounded-lg transition ${
-              !isLogin ? 'text-purple-400 underline' : 'text-gray-400 hover:text-white'
-            }`}
-          >
-            New to Network? Join now
-          </button>
-        </div>
-      </div>
+      {/* Interactive Hive Background */}
+      <HiveHexGrid />
 
       {/* RIGHT SIDE — AUTH FORM */}
       <div className="relative z-10 w-full lg:w-[420px]">
         {isLogin ? <LoginFormComponent /> : <SignupFormComponent />}
       </div>
-    </main>
+    </div>
   )
 }

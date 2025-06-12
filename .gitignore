@@ -30,3 +30,6 @@ next-env.d.ts
 
 # OS
 *.pem
+
+# Ignore node-installer.pkg if not needed in repo
+node-installer.pkg
