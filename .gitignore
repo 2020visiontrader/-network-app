@@ -1,0 +1,32 @@
+node_modules
+.vercel
+.next
+.DS_Store
+out
+*.log
+.env
+.env.*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Local Netlify folder
+.netlify
+
+# Config files with sensitive info
+GOOGLE_OAUTH_FINAL_CONFIG.md
+CONFIGURE_GOOGLE_OAUTH.md
+COMPLETE_FLOW_TEST_GUIDE.md
+NETLIFY_ENV_SETUP.md
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+*.pem

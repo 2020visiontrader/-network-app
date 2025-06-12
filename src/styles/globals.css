@@ -1,0 +1,340 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Hivemind Dark Theme CSS Custom Properties */
+:root {
+  --background: 13, 13, 13; /* #0D0D0D */
+  --surface: 28, 28, 28; /* #1C1C1C */
+  --text: 229, 231, 235; /* #E5E7EB */
+  --subtle: 156, 163, 175; /* #9CA3AF */
+  --border: 42, 42, 42; /* #2A2A2A */
+  --accent: 139, 92, 246; /* #8B5CF6 */
+  --accent-dark: 124, 58, 237; /* #7C3AED */
+  --accent2: 16, 185, 129; /* #10B981 */
+  --accent2-dark: 5, 150, 105; /* #059669 */
+  --success: 16, 185, 129; /* #10B981 */
+  --warning: 245, 158, 11; /* #F59E0B */
+  --error: 239, 68, 68; /* #EF4444 */
+}
+
+/* Base Styles - Hivemind Dark */
+html {
+  scroll-behavior: smooth;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+}
+
+body {
+  color: rgb(var(--text));
+  background: rgb(var(--background));
+  font-feature-settings: 'rlig' 1, 'calt' 1, 'ss01' 1;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.6;
+  letter-spacing: -0.01em;
+  overflow-x: hidden;
+}
+
+/* Hivemind Focus Styles */
+*:focus {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: 2px;
+  border-radius: 1.25rem;
+  box-shadow: 0 0 12px rgba(var(--accent), 0.3);
+}
+
+/* Hivemind Selection Styles */
+::selection {
+  background-color: rgba(var(--accent), 0.2);
+  color: rgb(var(--text));
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgb(var(--background));
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgb(var(--border));
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--subtle));
+}
+
+/* Hivemind Component Classes */
+@layer components {
+  /* Hivemind Buttons */
+  .btn-primary {
+    @apply bg-accent text-white px-6 py-3 rounded-hive font-semibold hover:bg-accent-dark hover:shadow-glow focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-background transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98];
+  }
+
+  .btn-secondary {
+    @apply border border-accent text-accent bg-transparent px-6 py-3 rounded-hive font-semibold hover:bg-accent hover:text-white hover:shadow-glow focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-background transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98];
+  }
+
+  .btn-ghost {
+    @apply text-subtle px-6 py-3 rounded-hive font-medium hover:text-text hover:bg-surface/50 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-background transition-all duration-300;
+  }
+
+  .btn-connection {
+    @apply bg-accent2 text-white px-6 py-3 rounded-hive font-semibold hover:bg-accent2-dark hover:shadow-glow-accent2 focus:outline-none focus:ring-2 focus:ring-accent2 focus:ring-offset-2 focus:ring-offset-background transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98];
+  }
+
+  /* Hivemind Inputs */
+  .input-field {
+    @apply block w-full px-4 py-3 border border-border rounded-hive bg-surface text-text placeholder-subtle focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent focus:shadow-glow transition-all duration-300;
+  }
+
+  /* Hivemind Cards */
+  .card {
+    @apply bg-surface border border-border rounded-hive shadow-node p-6 transition-all duration-300;
+  }
+
+  .card-hover {
+    @apply card hover:shadow-glow hover:border-accent/30 transition-all duration-300;
+  }
+
+  .card-interactive {
+    @apply card-hover cursor-pointer hover:shadow-glow-strong;
+  }
+
+  .card-node {
+    @apply bg-surface border border-border rounded-hive shadow-node p-4 hover:shadow-glow hover:border-accent/40 transition-all duration-500;
+  }
+
+  /* Mobile-First Containers */
+  .container-mobile {
+    @apply w-full px-4 mx-auto max-w-sm;
+  }
+
+  .section-padding-mobile {
+    @apply py-6;
+  }
+
+  /* Mobile Typography - Optimized for small screens */
+  .heading-xl-mobile {
+    @apply text-2xl font-bold text-text leading-tight tracking-tight;
+  }
+
+  .heading-lg-mobile {
+    @apply text-xl font-bold text-text leading-tight tracking-tight;
+  }
+
+  .heading-md-mobile {
+    @apply text-lg font-semibold text-text leading-tight;
+  }
+
+  .body-lg-mobile {
+    @apply text-base text-subtle leading-relaxed;
+  }
+
+  .body-base-mobile {
+    @apply text-sm text-subtle leading-relaxed;
+  }
+
+  /* Mobile Navigation */
+  .mobile-nav-item {
+    @apply flex flex-col items-center justify-center py-2 px-3 rounded-hive text-xs font-medium transition-all duration-200 min-h-[60px];
+  }
+
+  .mobile-nav-active {
+    @apply bg-accent text-white shadow-glow;
+  }
+
+  .mobile-nav-inactive {
+    @apply text-subtle hover:text-text active:bg-surface/50;
+  }
+
+  /* Hivemind Mobile Cards */
+  .card-mobile {
+    @apply bg-surface rounded-hive shadow-node border border-border p-4 transition-all duration-300;
+  }
+
+  .card-mobile-interactive {
+    @apply card-mobile active:scale-95 hover:shadow-glow hover:border-accent/30 transition-all duration-200;
+  }
+
+  /* Hivemind Mobile Buttons */
+  .btn-mobile-primary {
+    @apply bg-accent text-white px-6 py-4 rounded-hive font-semibold active:scale-95 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-background transition-all duration-200 min-h-[48px] shadow-glow;
+  }
+
+  .btn-mobile-secondary {
+    @apply border border-accent text-accent bg-transparent px-6 py-4 rounded-hive font-semibold active:scale-95 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-background transition-all duration-200 min-h-[48px];
+  }
+
+  /* Hivemind Navigation */
+  .nav-hive {
+    @apply bg-surface/80 backdrop-blur-md border-b border-border;
+  }
+
+  .nav-node {
+    @apply flex flex-col items-center justify-center py-2 px-3 rounded-hive text-xs font-medium transition-all duration-300 min-h-[60px] hover:shadow-glow;
+  }
+
+  .nav-active {
+    @apply bg-accent text-white shadow-glow;
+  }
+
+  .nav-inactive {
+    @apply text-subtle hover:text-text hover:bg-surface/50;
+  }
+}
+
+/* Hivemind Utility Classes */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Hivemind Gradients */
+  .gradient-hive {
+    background: linear-gradient(135deg, rgb(var(--accent)) 0%, rgb(var(--accent-dark)) 100%);
+  }
+
+  .gradient-connection {
+    background: linear-gradient(135deg, rgb(var(--accent2)) 0%, rgb(var(--accent2-dark)) 100%);
+  }
+
+  .gradient-neural {
+    background: linear-gradient(135deg, #8B5CF6 0%, #10B981 50%, #8B5CF6 100%);
+  }
+
+  .gradient-subtle {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.05) 0%, rgba(16, 185, 129, 0.05) 100%);
+  }
+
+  .gradient-mesh {
+    background: radial-gradient(circle at 20% 50%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(16, 185, 129, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 80%, rgba(139, 92, 246, 0.05) 0%, transparent 50%);
+  }
+
+  /* Hivemind Glass Effects */
+  .glass-hive {
+    background: rgba(28, 28, 28, 0.8);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(139, 92, 246, 0.1);
+  }
+
+  .glass-node {
+    background: rgba(28, 28, 28, 0.6);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(42, 42, 42, 0.5);
+  }
+
+  /* Hivemind Connection Effects */
+  .connection-line {
+    background: linear-gradient(90deg, transparent 0%, rgba(139, 92, 246, 0.3) 50%, transparent 100%);
+    height: 1px;
+  }
+
+  .pulse-hive {
+    animation: pulseHive 2s ease-in-out infinite;
+  }
+
+  .signal-active {
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.4), inset 0 0 20px rgba(139, 92, 246, 0.1);
+  }
+
+  /* Animations */
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .animate-glow {
+    animation: glow 2s ease-in-out infinite alternate;
+  }
+
+  /* Hover effects */
+  .hover-lift {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  }
+
+  /* Focus states */
+  .focus-accent {
+    @apply focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-background;
+  }
+
+  /* Mobile-specific utilities */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
+
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .mobile-scroll {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+
+  .mobile-tap-highlight {
+    -webkit-tap-highlight-color: rgba(139, 92, 246, 0.1);
+  }
+}
+
+/* Hivemind Keyframes */
+@keyframes glow {
+  from {
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+  }
+  to {
+    box-shadow: 0 0 30px rgba(139, 92, 246, 0.6);
+  }
+}
+
+@keyframes pulseHive {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes signalPulse {
+  0%, 100% {
+    box-shadow: 0 0 12px rgba(139, 92, 246, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 24px rgba(139, 92, 246, 0.4);
+  }
+}
+
+@keyframes connectionFlow {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 100% 50%;
+  }
+}

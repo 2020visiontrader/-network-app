@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /
+Allow: /login
+Allow: /signup
+Allow: /dashboard
+Allow: /contacts
+Allow: /introductions
+Allow: /coffee-chats
+Allow: /travel
+Allow: /birthdays
+
+# Disallow private/sensitive areas
+Disallow: /api/
+Disallow: /auth/
+
+# Sitemap
+Sitemap: https://network-app.vercel.app/sitemap.xml
