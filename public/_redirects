@@ -1,8 +1,12 @@
 # Netlify redirects for Next.js App Router
-# Handle dynamic routes and API endpoints
+# Handle Next.js static assets
+/_next/*  /_next/:splat  200
 
-# API routes
-/api/* /.netlify/functions/___netlify-handler 200
+# Handle static files
+/static/*  /static/:splat  200
 
-# Catch-all for client-side routing
-/* /index.html 200
+# Handle API routes
+/api/*  /.netlify/functions/:splat  200
+
+# Handle all routes for SPA
+/*  /index.html  200
