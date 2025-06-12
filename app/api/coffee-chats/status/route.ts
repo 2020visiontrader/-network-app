@@ -13,8 +13,12 @@ export async function GET() {
 
     const { data, error } = await supabase
       .from('coffee_chats')
-      .select('*')
-      .eq('user_id', user.id)
+      .select(`
+        *,
+        requester:founders!requester_id(*),
+        requested:founders!requested_id(*)
+      `)
+      .or(`requester_id.eq.${user.id},requested_id.eq.${user.id}`)
       .order('created_at', { ascending: false })
       .limit(1)
       .single();
@@ -42,9 +46,14 @@ export async function POST(request: Request) {
       .from('coffee_chats')
       .insert({
         ...chatData,
-        user_id: user.id,
+        requester_id: user.id,
+        status: 'pending'
       })
-      .select()
+      .select(`
+        *,
+        requester:founders!requester_id(*),
+        requested:founders!requested_id(*)
+      `)
       .single();
 
     if (error) throw error;

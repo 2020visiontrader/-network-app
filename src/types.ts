@@ -1,3 +1,4 @@
+// Mobile Founder Platform Types
 export type Json =
   | string
   | number
@@ -6,304 +7,135 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
-export type ReminderFrequency = 'weekly' | 'monthly' | 'quarterly' | 'yearly';
+// Founder-specific types for mobile platform
+export interface Founder {
+  id: string
+  email: string
+  full_name: string
+  company_name: string
+  role: string
+  company_stage?: string
+  industry?: string
+  tagline?: string
+  bio?: string
+  profile_photo_url?: string
+  location_city?: string
+  location_country?: string
+  linkedin_url?: string
+  twitter_handle?: string
+  company_website?: string
+  is_verified: boolean
+  is_active: boolean
+  member_number: number
+  onboarding_completed: boolean
+  onboarding_step: number
+  created_at: string
+  last_active: string
+  updated_at: string
+}
 
+export interface FounderApplication {
+  id: string
+  email: string
+  full_name: string
+  company_name: string
+  company_website?: string
+  linkedin_url: string
+  funding_stage?: string
+  brief_description: string
+  referral_code?: string
+  application_status: 'pending' | 'approved' | 'rejected'
+  admin_notes?: string
+  applied_at: string
+  reviewed_at?: string
+  reviewer_id?: string
+}
+
+export interface CoffeeChat {
+  id: string
+  requester_id: string
+  requested_id: string
+  status: 'pending' | 'confirmed' | 'completed' | 'cancelled'
+  proposed_time?: string
+  confirmed_time?: string
+  meeting_type: 'virtual' | 'in-person'
+  location_or_link?: string
+  requester_message?: string
+  duration_minutes: number
+  created_at: string
+  updated_at: string
+}
+
+export interface FounderConnection {
+  id: string
+  founder_a_id: string
+  founder_b_id: string
+  status: 'connected' | 'blocked'
+  connected_at: string
+  connection_source: 'app' | 'event' | 'referral'
+}
+
+export interface MobileNotification {
+  id: string
+  founder_id: string
+  type: 'coffee_request' | 'chat_confirmed' | 'new_connection' | 'system' | 'welcome'
+  title: string
+  body: string
+  data: Json
+  is_read: boolean
+  is_pushed: boolean
+  created_at: string
+}
+
+export interface FounderEvent {
+  id: string
+  title: string
+  description?: string
+  organizer_id: string
+  event_type: 'networking' | 'demo_day' | 'workshop'
+  start_time: string
+  end_time?: string
+  location?: string
+  virtual_link?: string
+  max_attendees: number
+  is_free: boolean
+  created_at: string
+}
+
+// Database schema for mobile founder platform
 export interface Database {
   public: {
     Tables: {
-      users: {
-        Row: {
-          id: string
-          email: string
-          full_name: string
-          preferred_name: string | null
-          role: 'member' | 'mentor' | 'mentee' | 'ambassador'
-          city: string | null
-          niche_tags: string[] | null
-          birthday: string | null
-          profile_visibility: boolean
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          email: string
-          full_name: string
-          preferred_name?: string | null
-          role?: 'member' | 'mentor' | 'mentee' | 'ambassador'
-          city?: string | null
-          niche_tags?: string[] | null
-          birthday?: string | null
-          profile_visibility?: boolean
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          email?: string
-          full_name?: string
-          preferred_name?: string | null
-          role?: 'member' | 'mentor' | 'mentee' | 'ambassador'
-          city?: string | null
-          niche_tags?: string[] | null
-          birthday?: string | null
-          profile_visibility?: boolean
-          created_at?: string
-        }
+      founders: {
+        Row: Founder
+        Insert: Omit<Founder, 'id' | 'created_at' | 'updated_at' | 'member_number'>
+        Update: Partial<Omit<Founder, 'id' | 'created_at' | 'member_number'>>
       }
-      contacts: {
-        Row: {
-          id: string
-          owner_id: string
-          contact_name: string
-          relationship_type: string | null
-          notes: string | null
-          last_interaction_date: string | null
-          birthdate: string | null
-          reminder_frequency: 'weekly' | 'monthly' | 'quarterly' | 'yearly' | null
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          owner_id: string
-          contact_name: string
-          relationship_type?: string | null
-          notes?: string | null
-          last_interaction_date?: string | null
-          birthdate?: string | null
-          reminder_frequency?: 'weekly' | 'monthly' | 'quarterly' | 'yearly' | null
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          owner_id?: string
-          contact_name?: string
-          relationship_type?: string | null
-          notes?: string | null
-          last_interaction_date?: string | null
-          birthdate?: string | null
-          reminder_frequency?: 'weekly' | 'monthly' | 'quarterly' | 'yearly' | null
-          created_at?: string
-        }
-      }
-      introductions: {
-        Row: {
-          id: string
-          introduced_by_id: string | null
-          contact_1_id: string | null
-          contact_2_id: string | null
-          intro_message: string | null
-          status: 'pending' | 'accepted' | 'declined'
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          introduced_by_id?: string | null
-          contact_1_id?: string | null
-          contact_2_id?: string | null
-          intro_message?: string | null
-          status?: 'pending' | 'accepted' | 'declined'
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          introduced_by_id?: string | null
-          contact_1_id?: string | null
-          contact_2_id?: string | null
-          intro_message?: string | null
-          status?: 'pending' | 'accepted' | 'declined'
-          created_at?: string
-        }
-      }
-      birthday_reminders: {
-        Row: {
-          id: string
-          contact_id: string
-          reminder_date: string | null
-          reminder_sent: boolean
-        }
-        Insert: {
-          id?: string
-          contact_id: string
-          reminder_date?: string | null
-          reminder_sent?: boolean
-        }
-        Update: {
-          id?: string
-          contact_id?: string
-          reminder_date?: string | null
-          reminder_sent?: boolean
-        }
+      founder_applications: {
+        Row: FounderApplication
+        Insert: Omit<FounderApplication, 'id' | 'applied_at'>
+        Update: Partial<Omit<FounderApplication, 'id' | 'applied_at'>>
       }
       coffee_chats: {
-        Row: {
-          id: string
-          user_id: string
-          city: string
-          date_available: string | null
-          public_visibility: boolean
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          city: string
-          date_available?: string | null
-          public_visibility?: boolean
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          city?: string
-          date_available?: string | null
-          public_visibility?: boolean
-          created_at?: string
-        }
+        Row: CoffeeChat
+        Insert: Omit<CoffeeChat, 'id' | 'created_at' | 'updated_at'>
+        Update: Partial<Omit<CoffeeChat, 'id' | 'created_at'>>
       }
-      travel_checkins: {
-        Row: {
-          id: string
-          user_id: string
-          city: string
-          checkin_date: string
-          visible_to_others: boolean
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          city: string
-          checkin_date?: string
-          visible_to_others?: boolean
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          city?: string
-          checkin_date?: string
-          visible_to_others?: boolean
-        }
+      connections: {
+        Row: FounderConnection
+        Insert: Omit<FounderConnection, 'id' | 'connected_at'>
+        Update: Partial<Omit<FounderConnection, 'id' | 'connected_at'>>
       }
-      interactions: {
-        Row: {
-          id: string
-          contact_id: string
-          user_id: string
-          interaction_type: string
-          notes: string | null
-          interaction_date: string
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          contact_id: string
-          user_id?: string
-          interaction_type: string
-          notes?: string | null
-          interaction_date?: string
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          contact_id?: string
-          user_id?: string
-          interaction_type?: string
-          notes?: string | null
-          interaction_date?: string
-          created_at?: string
-        }
+      notifications: {
+        Row: MobileNotification
+        Insert: Omit<MobileNotification, 'id' | 'created_at'>
+        Update: Partial<Omit<MobileNotification, 'id' | 'created_at'>>
       }
-    }
-    Views: {
-      contacts_due_for_nudge: {
-        Row: {
-          id: string
-          owner_id: string
-          contact_name: string
-          relationship_type: string | null
-          notes: string | null
-          last_interaction_date: string | null
-          birthdate: string | null
-          reminder_frequency: ReminderFrequency | null
-          created_at: string
-          owner_email: string
-          owner_name: string
-          next_interaction_due: string
-          is_overdue: boolean
-        }
-      }
-    }
-    Functions: {
-      get_due_contacts: {
-        Args: {
-          user_id: string
-        }
-        Returns: {
-          contact_id: string
-          contact_name: string
-          last_interaction_date: string
-          days_overdue: number
-          reminder_frequency: ReminderFrequency
-        }[]
+      events: {
+        Row: FounderEvent
+        Insert: Omit<FounderEvent, 'id' | 'created_at'>
+        Update: Partial<Omit<FounderEvent, 'id' | 'created_at'>>
       }
     }
   }
 }
-
-export type Contact = {
-  id: string;
-  name: string;
-  relationship_type: string;
-  notes?: string;
-  birthday?: string;
-  reminder_frequency: 'weekly' | 'monthly' | 'quarterly' | 'yearly';
-  last_interaction_date?: string;
-  user_id: string;
-};
-
-export type Interaction = {
-  id: string;
-  contact_id: string;
-  type: 'meeting' | 'call' | 'message' | 'other';
-  notes?: string;
-  date: string;
-  user_id: string;
-};
-
-export type Introduction = {
-  id?: string;
-  contact1_id: string;
-  contact2_id: string;
-  message: string;
-  status: 'pending' | 'accepted' | 'declined';
-  created_at?: string;
-  user_id?: string;
-};
-
-export type User = {
-  id: string;
-  email: string;
-  full_name: string;
-  preferred_name?: string;
-  role: 'member' | 'mentor' | 'mentee' | 'ambassador' | 'admin';
-  city?: string;
-  interests?: string[];
-  created_at: string;
-};
-
-export type CoffeeChat = {
-  id: string;
-  user_id: string;
-  city: string;
-  availability_date: string;
-  is_visible: boolean;
-  created_at: string;
-};
-
-export type TravelCheckin = {
-  id: string;
-  user_id: string;
-  city: string;
-  start_date?: string;
-  end_date?: string;
-  is_visible: boolean;
-  created_at: string;
-};

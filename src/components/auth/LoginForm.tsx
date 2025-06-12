@@ -64,10 +64,7 @@ export default function LoginForm() {
     }
   }
 
-  const handleDemoLogin = () => {
-    setEmail('demo@network.app')
-    setPassword('demo123')
-  }
+
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -144,32 +141,7 @@ export default function LoginForm() {
         )}
       </button>
 
-      {/* Demo Login */}
-      <div className="text-center">
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-zinc-700"></div>
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-zinc-900 text-gray-400">or</span>
-          </div>
-        </div>
-        
-        <button
-          type="button"
-          onClick={handleDemoLogin}
-          className="mt-4 w-full px-6 py-3 bg-zinc-800 hover:bg-zinc-700 text-white font-medium rounded-lg transition border border-zinc-700 hover:border-zinc-600"
-        >
-          Try Demo Account
-        </button>
-      </div>
 
-      {/* Admin Access Note */}
-      <div className="text-center">
-        <p className="text-xs text-gray-500">
-          Admin access: Use admin@network.app for admin panel
-        </p>
-      </div>
     </form>
   )
 }

@@ -1,11 +1,11 @@
-import { supabase } from './api';
-import { Database } from './types';
+import { supabase } from '@/lib/supabase';
+import type { Database } from '@/lib/database.types';
 
 export type SignUpCredentials = {
   email: string;
   password: string;
   fullName: string;
-  role?: Database['public']['Tables']['users']['Row']['role'];
+  role?: 'member' | 'mentor' | 'mentee' | 'ambassador';
 };
 
 export type LoginCredentials = {
@@ -32,6 +32,8 @@ export const authService = {
           email,
           full_name: fullName,
           role,
+          profile_visibility: true,
+          created_at: new Date().toISOString()
         });
 
       if (profileError) {

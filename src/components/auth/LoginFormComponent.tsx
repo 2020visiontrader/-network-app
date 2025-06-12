@@ -9,8 +9,36 @@ export default function LoginFormComponent() {
   const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
+  const [isResettingPassword, setIsResettingPassword] = useState(false)
+  const [resetMessage, setResetMessage] = useState('')
   const router = useRouter()
   const { setUser } = useApp()
+
+  const handleGoogleSignIn = async () => {
+    try {
+      setIsLoading(true)
+      setError('')
+
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: process.env.NODE_ENV === 'production'
+            ? 'https://appnetwork.netlify.app/auth/callback'
+            : 'http://localhost:3001/auth/callback'
+        }
+      })
+
+      if (error) {
+        console.error('Google sign-in error:', error)
+        setError('Google sign-in failed. Please try again.')
+      }
+    } catch (error: any) {
+      console.error('Google sign-in error:', error)
+      setError('Google sign-in failed. Please try again.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -25,7 +53,8 @@ export default function LoginFormComponent() {
       })
 
       if (authError) {
-        setError('Invalid email or password')
+        console.error('Auth error:', authError)
+        setError(authError.message || 'Invalid email or password')
         return
       }
 
@@ -34,52 +63,76 @@ export default function LoginFormComponent() {
         return
       }
 
-      // Fetch user data from users table
-      const { data: userData, error: userError } = await supabase
-        .from('users')
+      // Get founder data from founders table
+      const { data: founderData, error: founderError } = await supabase
+        .from('founders')
         .select('*')
-        .eq('email', email)
+        .eq('id', authData.user.id)
         .single()
 
-      if (userError || !userData) {
-        setError('User not found in database')
+      if (founderError || !founderData) {
+        console.error('Founder lookup error:', founderError)
+        setError('Founder account not found. Please contact support or apply as a founder.')
         return
       }
 
       const user = {
-        id: userData.id,
-        name: userData.name,
-        email: userData.email,
-        status: userData.status as 'active' | 'pending' | 'waitlisted' | 'suspended',
-        profile_progress: userData.profile_progress,
-        is_ambassador: userData.is_ambassador,
-        created_at: userData.created_at
+        id: founderData.id,
+        name: founderData.full_name,
+        email: founderData.email,
+        status: founderData.is_active ? 'active' : 'pending' as 'active' | 'pending' | 'waitlisted' | 'suspended',
+        profile_progress: founderData.onboarding_completed ? 100 : 50,
+        is_ambassador: false,
+        created_at: founderData.created_at
       }
 
       setUser(user)
       localStorage.setItem('network_user', JSON.stringify(user))
 
       // Redirect based on user status and profile completion
-      if (user.status === 'waitlisted') {
-        router.push('/waitlist')
-      } else if (user.status === 'pending' || user.profile_progress < 100) {
+      if (user.status === 'suspended') {
+        setError('Your access has been paused by an admin. Please contact support.')
+        return
+      } else if (user.profile_progress < 100) {
         router.push('/onboarding/profile')
       } else if (user.status === 'active') {
         router.push('/dashboard')
-      } else {
-        setError('Account suspended. Please contact support.')
       }
-    } catch (error) {
-      setError('Login failed. Please try again.')
+    } catch (error: any) {
       console.error('Login error:', error)
+      if (error.message && error.message.includes('Failed to fetch')) {
+        setError('Connection failed. Please check your internet connection and try again.')
+      } else {
+        setError(error.message || 'Login failed. Please try again.')
+      }
     } finally {
       setIsLoading(false)
     }
   }
 
-  const handleDemoLogin = () => {
-    setEmail('demo@network.app')
-    setPassword('demo123')
+  const handleForgotPassword = async () => {
+    if (!email) {
+      setError('Please enter your email address first')
+      return
+    }
+
+    setIsResettingPassword(true)
+    setError('')
+    setResetMessage('')
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: 'https://appnetwork.netlify.app/reset-password'
+      })
+
+      if (error) throw error
+
+      setResetMessage('Password reset email sent! Check your inbox.')
+    } catch (error: any) {
+      setError(error.message || 'Failed to send reset email')
+    } finally {
+      setIsResettingPassword(false)
+    }
   }
 
   return (
@@ -99,6 +152,12 @@ export default function LoginFormComponent() {
         </div>
       )}
 
+      {resetMessage && (
+        <div className="bg-green-900/30 border border-green-500/50 text-green-300 px-4 py-3 rounded-lg text-sm mb-6">
+          {resetMessage}
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <label htmlFor="email" className="block text-sm mb-1 text-gray-300">Email</label>
@@ -114,7 +173,17 @@ export default function LoginFormComponent() {
         </div>
 
         <div>
-          <label htmlFor="password" className="block text-sm mb-1 text-gray-300">Password</label>
+          <div className="flex justify-between items-center mb-1">
+            <label htmlFor="password" className="block text-sm text-gray-300">Password</label>
+            <button
+              type="button"
+              onClick={handleForgotPassword}
+              disabled={isResettingPassword}
+              className="text-xs text-purple-400 hover:text-purple-300 transition disabled:opacity-50"
+            >
+              {isResettingPassword ? 'Sending...' : 'Forgot password?'}
+            </button>
+          </div>
           <input
             id="password"
             type="password"
@@ -142,36 +211,48 @@ export default function LoginFormComponent() {
         </button>
       </form>
 
-      {/* Demo Login */}
-      <div className="mt-6 text-center">
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-zinc-700"></div>
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-zinc-900 text-gray-400">or</span>
-          </div>
+      {/* Social Login Divider */}
+      <div className="relative my-6">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-zinc-700"></div>
         </div>
-
-        <button
-          type="button"
-          onClick={handleDemoLogin}
-          className="mt-4 w-full px-4 py-3 bg-zinc-800 hover:bg-zinc-700 text-white font-medium rounded-lg transition border border-zinc-700 hover:border-zinc-600"
-        >
-          Try Demo Account
-        </button>
+        <div className="relative flex justify-center text-sm">
+          <span className="px-2 bg-zinc-900 text-gray-400">or</span>
+        </div>
       </div>
+
+      {/* Google Sign-In */}
+      <button
+        onClick={handleGoogleSignIn}
+        disabled={isLoading}
+        className="w-full bg-white hover:bg-gray-50 text-gray-900 font-medium py-3 px-4 rounded-xl border border-gray-300 transition duration-200 flex items-center justify-center space-x-3 disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        <svg className="w-5 h-5" viewBox="0 0 24 24">
+          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+        </svg>
+        <span>Continue with Google</span>
+      </button>
+
+      {/* Success Message */}
+      {router && new URLSearchParams(window.location.search).get('message') === 'signup_success' && (
+        <div className="bg-green-900/30 border border-green-500/50 text-green-300 px-4 py-3 rounded-lg text-sm text-center mt-4">
+          Account created successfully! Please log in with your credentials.
+        </div>
+      )}
 
       {/* Login Instructions */}
       <div className="text-center mt-4 space-y-2">
         <div className="text-xs text-gray-600 space-y-1">
-          <p>Test different flows:</p>
-          <p>• waitlist@example.com → Waitlist page</p>
-          <p>• new@example.com → Onboarding flow</p>
-          <p>• Any other email → Full dashboard</p>
+          <p>New to Network?</p>
+          <p>• Sign up to join our community of 250 founding members</p>
+          <p>• Complete your profile to unlock all features</p>
+          <p>• Start networking immediately after registration</p>
         </div>
         <p className="text-xs text-gray-500 mt-2">
-          Admin access via Supabase Dashboard
+          Questions? Contact hello@network.app
         </p>
       </div>
     </div>

@@ -1,63 +1,82 @@
-# Network App
+# Network App - Mobile Founder Platform
 
-A relationship management platform for maintaining and strengthening personal and professional connections through smart reminders, introductions, city-based meetups, and travel visibility.
+A mobile-first networking platform for the first 250 startup founders (free tier).
 
-## Features
+## 🎯 Platform Overview
 
-- User management with roles (member, mentor, mentee, ambassador)
-- Contact management with relationship tracking
-- Smart introduction system
-- Birthday reminders
-- Coffee chat meetups
-- Travel check-ins and notifications
-- City-based networking
+**Exclusive founder networking** with mobile-optimized features:
+- 📝 **Founder Applications** (admin approval required)
+- ☕ **Coffee Chat Booking** (3/day rate limit)
+- 🤝 **Founder Connections** (verified founders only)
+- 📅 **Founder Events** (networking, demo days)
+- 📱 **Push Notifications** (mobile-optimized)
+- 🔐 **Row Level Security** (founder-only data access)
+- 🔢 **250 Founder Cap** (free tier limit)
 
-## Setup
+## 🚀 Quick Start
 
-1. Create a Supabase project at [https://supabase.com](https://supabase.com)
+1. **Deploy Database Schema:**
+   ```bash
+   # Execute mobile_founder_schema.sql in Supabase Dashboard
+   # Then verify deployment:
+   npm run verify-schema
+   ```
 
-2. Clone the repository and install dependencies:
+2. **Install Dependencies:**
    ```bash
    npm install
    ```
 
-3. Copy the environment example file and update with your Supabase credentials:
+3. **Environment Setup:**
    ```bash
-   cp .env.example .env
+   # Update .env with your Supabase credentials
+   SUPABASE_URL=your_project_url
+   SUPABASE_ANON_KEY=your_anon_key
+   SUPABASE_SERVICE_ROLE_KEY=your_service_key
    ```
 
-4. Update the `.env` file with your Supabase project credentials:
-   - `SUPABASE_URL`: Your Supabase project URL
-   - `SUPABASE_ANON_KEY`: Your Supabase anonymous key
-   - `SUPABASE_SERVICE_ROLE_KEY`: Your Supabase service role key
-
-5. Run the database setup script:
+4. **Development:**
    ```bash
-   npm run setup-db
+   npm run dev:mobile
    ```
 
-## Development
+## 📱 Mobile-First Architecture
 
-Build the project:
+- **Backend:** Supabase (PostgreSQL + Auth + Real-time)
+- **Frontend:** Next.js App Router (mobile-responsive)
+- **Styling:** Tailwind CSS (dark theme)
+- **Deployment:** Netlify
+- **Database:** 12 founder-specific tables with RLS
+
+## 🔐 Founder-Only Features
+
+- **250 member cap** with auto-numbering
+- **Application vetting** system
+- **Coffee chat rate limiting** (3 per day)
+- **Push notification** infrastructure
+- **Real-time status** updates
+- **Location-based** founder discovery
+
+## 📊 Database Schema
+
+Core tables for mobile founder platform:
+- `founders` - Verified startup founders (250 max)
+- `founder_applications` - Application/vetting system
+- `coffee_chats` - 1:1 meeting booking
+- `connections` - Founder networking
+- `notifications` - Mobile alerts
+- `events` - Founder meetups
+- `device_tokens` - Push notifications
+- `availability_status` - Real-time status
+
+## 🌐 Deployment
+
+Deploy to Netlify:
 ```bash
 npm run build
+# Deploy to https://appnetwork.netlify.app
 ```
 
-Start the development server:
-```bash
-npm start
-```
+## 🎯 Target Users
 
-## Database Schema
-
-The application uses the following main tables:
-
-- `users`: User profiles and authentication
-- `contacts`: Personal and professional contacts
-- `introductions`: Connection introductions between contacts
-- `birthday_reminders`: Automated birthday reminder system
-- `coffee_chats`: City-based meetup scheduling
-- `travel_checkins`: User travel and location updates
-
-For detailed schema information, see `database/migrations/01_initial_schema.sql`.
-# -network-app
+**Startup founders only** - curated community of 250 verified founders building the next generation of companies.

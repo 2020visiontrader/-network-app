@@ -65,27 +65,27 @@ export default function NotFound() {
         {/* Action Buttons */}
         <div className="space-y-4 animate-slide-up" style={{ animationDelay: '0.3s' }}>
           <Link
-            href="/dashboard?demo=true"
+            href="/dashboard"
             className="btn-mobile-primary w-full"
           >
-            Return to Hub
+            Return to Dashboard
           </Link>
           <Link
             href="/"
             className="btn-mobile-secondary w-full"
           >
-            Reconnect to Network
+            Back to Network
           </Link>
         </div>
 
         {/* Help Text */}
         <div className="mt-8 pt-8 border-t border-border animate-slide-up" style={{ animationDelay: '0.4s' }}>
           <p className="text-sm text-subtle">
-            Need assistance? Navigate to your{' '}
-            <Link href="/contacts?demo=true" className="text-accent hover:text-accent-light font-medium transition-colors duration-300">
-              node directory
+            Need assistance? Check your{' '}
+            <Link href="/contacts" className="text-accent hover:text-accent-light font-medium transition-colors duration-300">
+              founder connections
             </Link>
-            {' '}or establish new connections.
+            {' '}or schedule a coffee chat.
           </p>
         </div>
       </div>

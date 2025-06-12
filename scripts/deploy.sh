@@ -104,15 +104,21 @@ deploy_vercel() {
 # Deploy to Netlify
 deploy_netlify() {
     print_info "Deploying to Netlify..."
-    
+
     if ! command -v netlify &> /dev/null; then
         print_info "Installing Netlify CLI..."
         npm install -g netlify-cli
     fi
-    
+
+    print_info "Building the application..."
+    npm run build || {
+        print_error "Build failed. Please fix build errors before deploying."
+        exit 1
+    }
+
     print_info "Starting Netlify deployment..."
     netlify deploy --prod --dir=.next
-    
+
     print_status "Deployed to Netlify successfully!"
 }
 

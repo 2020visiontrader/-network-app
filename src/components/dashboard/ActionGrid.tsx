@@ -1,4 +1,5 @@
 'use client'
+import { useRouter } from 'next/navigation'
 
 interface ActionCard {
   id: string
@@ -7,6 +8,7 @@ interface ActionCard {
   icon: string
   color: string
   action: string
+  route: string
   badge?: string
 }
 
@@ -18,6 +20,7 @@ const actionCards: ActionCard[] = [
     icon: '🧬',
     color: 'from-purple-600 to-purple-800',
     action: 'Create Group',
+    route: '/masterminds',
     badge: 'Popular'
   },
   {
@@ -26,7 +29,8 @@ const actionCards: ActionCard[] = [
     description: 'Discover networking events and conferences in your area',
     icon: '🎤',
     color: 'from-blue-600 to-blue-800',
-    action: 'Browse Events'
+    action: 'Browse Events',
+    route: '/events'
   },
   {
     id: 'book-chat',
@@ -34,7 +38,8 @@ const actionCards: ActionCard[] = [
     description: 'Schedule 1:1 meetings with interesting connections',
     icon: '☕',
     color: 'from-yellow-600 to-yellow-800',
-    action: 'Find People'
+    action: 'Find People',
+    route: '/coffee-chats'
   },
   {
     id: 'invite-others',
@@ -43,6 +48,7 @@ const actionCards: ActionCard[] = [
     icon: '🤝',
     color: 'from-green-600 to-green-800',
     action: 'Send Invites',
+    route: '/ambassador',
     badge: 'Earn $50'
   },
   {
@@ -51,7 +57,8 @@ const actionCards: ActionCard[] = [
     description: 'Connect with locals and travelers in your destination',
     icon: '✈️',
     color: 'from-indigo-600 to-indigo-800',
-    action: 'Set Location'
+    action: 'Set Location',
+    route: '/travel'
   },
   {
     id: 'skill-share',
@@ -59,11 +66,18 @@ const actionCards: ActionCard[] = [
     description: 'Offer mentorship or learn from experts in your field',
     icon: '🎯',
     color: 'from-pink-600 to-pink-800',
-    action: 'Get Started'
+    action: 'Get Started',
+    route: '/introductions'
   }
 ]
 
 export default function ActionGrid() {
+  const router = useRouter()
+
+  const handleActionClick = (route: string) => {
+    router.push(route)
+  }
+
   return (
     <div className="bg-zinc-900/70 border border-zinc-800 p-6 rounded-2xl shadow-xl backdrop-blur-sm">
       <div className="flex items-center justify-between mb-6">
@@ -80,7 +94,8 @@ export default function ActionGrid() {
         {actionCards.map((card) => (
           <div
             key={card.id}
-            className="group relative bg-zinc-800/50 border border-zinc-700 p-5 rounded-xl hover:border-purple-500/50 transition-all duration-300 hover:transform hover:scale-105"
+            className="group relative bg-zinc-800/50 border border-zinc-700 p-5 rounded-xl hover:border-purple-500/50 transition-all duration-300 hover:transform hover:scale-105 cursor-pointer"
+            onClick={() => handleActionClick(card.route)}
           >
             {/* Badge */}
             {card.badge && (
@@ -103,7 +118,13 @@ export default function ActionGrid() {
             </p>
 
             {/* Action Button */}
-            <button className={`w-full bg-gradient-to-r ${card.color} text-white font-medium py-2 px-4 rounded-lg hover:shadow-lg transition-all duration-200 group-hover:shadow-xl`}>
+            <button
+              className={`w-full bg-gradient-to-r ${card.color} text-white font-medium py-2 px-4 rounded-lg hover:shadow-lg transition-all duration-200 group-hover:shadow-xl`}
+              onClick={(e) => {
+                e.stopPropagation()
+                handleActionClick(card.route)
+              }}
+            >
               {card.action}
             </button>
 

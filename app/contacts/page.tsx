@@ -5,32 +5,46 @@ import { withAuth } from '@/components/withAuth';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { Database } from '@/lib/database.types';
 
-type Contact = Database['public']['Tables']['contacts']['Row'];
+type Founder = any;
+type Connection = any;
 
 const ContactsPage = () => {
-  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [connections, setConnections] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [newContact, setNewContact] = useState({
-    contact_name: '',
-    email: '',
-    relationship_type: '',
-    notes: '',
-    birthdate: '',
-    reminder_frequency: 'monthly' as 'weekly' | 'monthly' | 'quarterly' | 'yearly'
-  });
+  const [currentFounderId, setCurrentFounderId] = useState<string | null>(null);
+  const [newContact, setNewContact] = useState<any>({});
+  const [showAddForm, setShowAddForm] = useState<boolean>(false);
+
+  const [contacts, setContacts] = useState<any[]>([]);
+
+  const fetchContacts = async () => {
+    console.log("fetchContacts called");
+  };
 
   const supabase = createClientComponentClient<Database>();
 
-  const fetchContacts = async () => {
+  const fetchConnections = async () => {
     try {
-      const response = await fetch('/api/contacts');
-      if (response.ok) {
-        const data = await response.json();
-        setContacts(data);
-      }
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      setCurrentFounderId(session.user.id);
+
+      const { data, error } = await supabase
+        .from('connections')
+        .select(`
+          *,
+          founder_a:founders!founder_a_id(*),
+          founder_b:founders!founder_b_id(*)
+        `)
+        .or(`founder_a_id.eq.${session.user.id},founder_b_id.eq.${session.user.id}`)
+        .eq('status', 'connected')
+        .order('connected_at', { ascending: false });
+
+      if (error) throw error;
+      setConnections(data || []);
     } catch (error) {
-      console.error('Error fetching contacts:', error);
+      console.error('Error fetching founder connections:', error);
     } finally {
       setLoading(false);
     }
@@ -38,46 +52,11 @@ const ContactsPage = () => {
 
   const addContact = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
-
-      const { error } = await supabase
-        .from('contacts')
-        .insert([{
-          ...newContact,
-          owner_id: session.user.id,
-          birthdate: newContact.birthdate || null,
-        }]);
-
-      if (error) throw error;
-
-      setNewContact({
-        contact_name: '',
-        email: '',
-        relationship_type: '',
-        notes: '',
-        birthdate: '',
-        reminder_frequency: 'monthly'
-      });
-      setShowAddForm(false);
-      fetchContacts();
-    } catch (error) {
-      console.error('Error adding contact:', error);
-    }
+    console.log("addContact called");
   };
 
   const deleteContact = async (contactId: string) => {
-    try {
-      const response = await fetch(`/api/contacts/${contactId}`, {
-        method: 'DELETE',
-      });
-      if (response.ok) {
-        fetchContacts();
-      }
-    } catch (error) {
-      console.error('Error deleting contact:', error);
-    }
+    console.log("deleteContact called");
   };
 
   useEffect(() => {

@@ -38,7 +38,13 @@ interface AppProviderProps {
 export default function AppProvider({ children }: AppProviderProps) {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [hasMounted, setHasMounted] = useState(false)
   const pathname = usePathname()
+
+  // Prevent hydration mismatch by ensuring client-side rendering
+  useEffect(() => {
+    setHasMounted(true)
+  }, [])
 
   // Routes that should not show navigation
   const noNavRoutes = [
@@ -46,7 +52,7 @@ export default function AppProvider({ children }: AppProviderProps) {
     '/login',
     '/signup',
     '/thank-you',
-    '/waitlist',
+    '/closed',
     '/suspended',
     '/auth/callback'
   ]
@@ -62,8 +68,10 @@ export default function AppProvider({ children }: AppProviderProps) {
     user.status === 'active'
 
   useEffect(() => {
-    // Initialize user authentication
+    // Initialize user authentication only after mounting
     const initializeAuth = async () => {
+      if (!hasMounted) return
+
       try {
         // Check for existing session
         const savedUser = localStorage.getItem('network_user')
@@ -80,7 +88,7 @@ export default function AppProvider({ children }: AppProviderProps) {
     }
 
     initializeAuth()
-  }, [pathname])
+  }, [pathname, hasMounted])
 
   const logout = async () => {
     try {
@@ -106,10 +114,19 @@ export default function AppProvider({ children }: AppProviderProps) {
     logout
   }
 
+  // Prevent hydration mismatch by showing loading state until mounted
+  if (!hasMounted) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    )
+  }
+
   return (
     <AppContext.Provider value={contextValue}>
       <RouteProtection user={user} isLoading={isLoading}>
-        <div className="min-h-screen bg-black">
+        <div className="min-h-screen bg-black" suppressHydrationWarning>
           {showNavigation && (
             <GlobalNavigation user={user} onLogout={logout} />
           )}

@@ -1,7 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { CoffeeChat, User } from '../types';
+import type { Database } from '@/lib/database.types';
+
+type User = Database['public']['Tables']['users']['Row'];
+type CoffeeChat = Database['public']['Tables']['coffee_chats']['Row'];
 
 export default function CoffeeChatStatus() {
   const [status, setStatus] = useState<CoffeeChat | null>(null);
@@ -128,15 +131,17 @@ export default function CoffeeChatStatus() {
         <div className="mt-8">
           <h3 className="text-lg font-semibold mb-4">People in {city}</h3>
           <div className="space-y-4">
-            {matches.map((user) => (
-              <div
-                key={user.id}
-                className="border p-4 rounded-lg shadow"
-              >
-                <h4 className="font-medium">{user.preferred_name || user.full_name}</h4>
-                {user.interests && user.interests.length > 0 && (
-                  <p className="text-sm text-gray-600 mt-1">
-                    Interests: {user.interests.join(', ')}
+            {matches.map(user => (
+              <div key={user.id} className="bg-white p-4 rounded-lg shadow">
+                <h3 className="text-lg font-semibold">{user.full_name}</h3>
+                {user.city && (
+                  <p className="text-sm text-gray-500">
+                    Location: {user.city}
+                  </p>
+                )}
+                {user.niche_tags && user.niche_tags.length > 0 && (
+                  <p className="text-sm text-gray-400">
+                    Interests: {user.niche_tags.join(', ')}
                   </p>
                 )}
               </div>
@@ -146,4 +151,4 @@ export default function CoffeeChatStatus() {
       )}
     </div>
   );
-} 
+}

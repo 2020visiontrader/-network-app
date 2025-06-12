@@ -2,7 +2,7 @@
   "name": "Network – Relationship OS",
   "short_name": "Network",
   "description": "Build and manage your network with intention. Track relationships, plan meetups, and reconnect meaningfully.",
-  "start_url": "/dashboard?demo=true",
+  "start_url": "/dashboard",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#4E46E5",
@@ -35,14 +35,14 @@
       "name": "Dashboard",
       "short_name": "Dashboard",
       "description": "View your network dashboard",
-      "url": "/dashboard?demo=true",
+      "url": "/dashboard",
       "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
     },
     {
       "name": "Contacts",
       "short_name": "Contacts",
       "description": "Manage your contacts",
-      "url": "/contacts?demo=true",
+      "url": "/contacts",
       "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
     },
     {

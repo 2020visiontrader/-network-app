@@ -43,8 +43,7 @@ const routeConfigs: RouteConfig[] = [
   { path: '/onboarding/verify', requiresAuth: true, requiresComplete: false },
   { path: '/onboarding/complete', requiresAuth: true, requiresComplete: false },
 
-  // Waitlist specific
-  { path: '/waitlist', requiresAuth: false, requiresComplete: false, allowedStatuses: ['pending', 'waitlisted'] },
+
 
   // Protected routes requiring complete profile
   { path: '/dashboard', requiresAuth: true, requiresComplete: true, allowedStatuses: ['active'] },
@@ -102,10 +101,6 @@ export default function RouteProtection({ children, user, isLoading }: RouteProt
       if (user) {
         // Check if user status is allowed for this route
         if (config.allowedStatuses && !config.allowedStatuses.includes(user.status)) {
-          if (user.status === 'pending' || user.status === 'waitlisted') {
-            router.push('/waitlist')
-            return
-          }
           if (user.status === 'suspended') {
             router.push('/suspended')
             return
@@ -127,11 +122,7 @@ export default function RouteProtection({ children, user, isLoading }: RouteProt
           return
         }
 
-        // Redirect waitlisted users to waitlist page
-        if (user.status === 'waitlisted' && !pathname.startsWith('/waitlist')) {
-          router.push('/waitlist')
-          return
-        }
+
       }
 
       setIsChecking(false)

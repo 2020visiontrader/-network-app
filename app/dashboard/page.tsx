@@ -1,10 +1,12 @@
 'use client';
 
 import { useEffect, useState, Suspense } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
+import { useAuthGuard } from '@/hooks/useAuth';
 import HiveHexGrid from '@/components/HiveHexGrid';
 import { WelcomeCard, HiveFeed, MetricsBoard, ActionGrid } from '@/components/dashboard';
 import { useApp } from '@/components/providers/AppProvider';
+import { supabase } from '@/lib/supabase';
 
 interface DashboardUser {
   id: string;
@@ -13,57 +15,100 @@ interface DashboardUser {
   preferred_name?: string;
   role: string;
   city?: string;
+  industries?: string[];
+  hobbies?: string[];
+  profile_progress: number;
+  is_ambassador: boolean;
   created_at: string;
+  company_name?: string;
+  member_number?: number;
 }
 
 function DashboardContent() {
   const { user: appUser } = useApp();
   const [user, setUser] = useState<DashboardUser | null>(null);
-  const searchParams = useSearchParams();
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
   const router = useRouter();
-  const isDemoMode = searchParams.get('demo') === 'true';
-  const isAdminPreview = searchParams.get('adminPreview') === 'true';
 
   useEffect(() => {
-    if (isDemoMode) {
-      // Set demo user data
+    loadUserData();
+  }, [appUser]);
+
+  const loadUserData = async () => {
+    try {
+      setIsLoading(true);
+      setError('');
+
+      // Check if user is logged in
+      if (!appUser) {
+        router.push('/');
+        return;
+      }
+
+      // Check if profile is complete
+      if (appUser.profile_progress < 100 && appUser.status !== 'active') {
+        router.push('/onboarding/profile');
+        return;
+      }
+
+      // Get complete founder data from Supabase
+      const { data: founderData, error: founderError } = await supabase
+        .from('founders')
+        .select(`
+          id,
+          email,
+          full_name,
+          company_name,
+          role,
+          location_city,
+          industry,
+          onboarding_completed,
+          is_verified,
+          member_number,
+          created_at
+        `)
+        .eq('id', appUser.id)
+        .single();
+
+      if (founderError) {
+        console.error('Error loading founder data:', founderError);
+        setError('Failed to load founder data');
+        return;
+      }
+
+      if (!founderData) {
+        setError('Founder data not found');
+        return;
+      }
+
+      // Convert to dashboard user format
       setUser({
-        id: 'demo-user',
-        email: 'demo@example.com',
-        full_name: 'Demo User',
-        preferred_name: 'Demo',
-        role: 'member',
-        city: 'San Francisco',
-        created_at: new Date().toISOString(),
+        id: founderData.id,
+        email: founderData.email,
+        full_name: founderData.full_name,
+        preferred_name: founderData.full_name.split(' ')[0], // First name as preferred
+        role: founderData.is_verified ? 'verified_founder' : 'pending_founder',
+        city: founderData.location_city || 'Location not set',
+        industries: founderData.industry ? [founderData.industry] : [],
+        hobbies: [],
+        profile_progress: founderData.onboarding_completed ? 100 : 50,
+        is_ambassador: false,
+        created_at: founderData.created_at,
+        company_name: founderData.company_name,
+        member_number: founderData.member_number
       });
-      return;
+
+    } catch (error) {
+      console.error('Error in loadUserData:', error);
+      setError('Failed to load dashboard data');
+    } finally {
+      setIsLoading(false);
     }
+  };
 
-    // Check if user is logged in
-    if (!appUser) {
-      router.push('/');
-      return;
-    }
-
-    // Check if profile is complete
-    if (appUser.profile_progress < 100 && appUser.status !== 'active') {
-      router.push('/onboarding/profile');
-      return;
-    }
-
-    // Convert app user to dashboard user format
-    setUser({
-      id: appUser.id,
-      email: appUser.email,
-      full_name: appUser.name,
-      preferred_name: appUser.name,
-      role: appUser.is_ambassador ? 'ambassador' : 'member',
-      city: 'San Francisco', // Default city
-      created_at: appUser.created_at,
-    });
-  }, [isDemoMode, appUser, router]);
-
-  if (!user) {
+  // Loading state
+  if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen bg-black">
         <div className="text-center">
@@ -74,28 +119,52 @@ function DashboardContent() {
     );
   }
 
+  // Error state
+  if (error) {
+    return (
+      <div className="flex justify-center items-center min-h-screen bg-black">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <span className="text-2xl">⚠️</span>
+          </div>
+          <p className="text-red-400 mb-4">{error}</p>
+          <button
+            onClick={loadUserData}
+            className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // No user data
+  if (!user) {
+    return (
+      <div className="flex justify-center items-center min-h-screen bg-black">
+        <div className="text-center">
+          <p className="text-gray-400">No user data available</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <main className="min-h-screen bg-gradient-to-b from-black via-purple-950/20 to-black text-white relative overflow-hidden">
       <HiveHexGrid />
 
       <div className="relative z-10 max-w-6xl mx-auto px-6 py-10 space-y-8">
-        {/* Admin Preview Banner */}
-        {isAdminPreview && (
-          <div className="bg-red-600/20 border border-red-500/30 text-red-300 px-4 py-3 rounded-lg text-center">
-            <span className="font-medium">👑 Admin Preview Mode</span> - You're viewing the user experience as an admin
+        {/* Profile Completion Banner */}
+        {user.profile_progress < 100 && (
+          <div className="bg-yellow-600/20 border border-yellow-500/30 text-yellow-300 px-4 py-3 rounded-lg text-center">
+            <span className="font-medium">⚡ Complete Your Profile</span> - Your profile is {user.profile_progress}% complete
             <button
-              onClick={() => window.close()}
-              className="ml-4 px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-sm rounded transition"
+              onClick={() => router.push('/onboarding/profile')}
+              className="ml-4 px-3 py-1 bg-yellow-600 hover:bg-yellow-700 text-white text-sm rounded transition"
             >
-              Return to Admin
+              Complete Profile
             </button>
-          </div>
-        )}
-
-        {/* Demo Mode Signal */}
-        {isDemoMode && (
-          <div className="bg-blue-600/20 border border-blue-500/30 text-blue-300 px-4 py-3 rounded-lg text-center">
-            <span className="font-medium">🧪 Demo Mode Active</span> - This is a preview of your Network dashboard with sample data
           </div>
         )}
 

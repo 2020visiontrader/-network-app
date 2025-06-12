@@ -183,6 +183,143 @@ export interface Database {
           created_at?: string
         }
       }
+      waitlist: {
+        Row: {
+          id: string
+          email: string
+          name: string | null
+          referrer_code: string | null
+          status: 'pending' | 'approved' | 'declined'
+          reason: string | null
+          linkedin_url: string | null
+          joined_at: string
+          processed_at: string | null
+        }
+        Insert: {
+          id?: string
+          email: string
+          name?: string | null
+          referrer_code?: string | null
+          status?: 'pending' | 'approved' | 'declined'
+          reason?: string | null
+          linkedin_url?: string | null
+          joined_at?: string
+          processed_at?: string | null
+        }
+        Update: {
+          id?: string
+          email?: string
+          name?: string | null
+          referrer_code?: string | null
+          status?: 'pending' | 'approved' | 'declined'
+          reason?: string | null
+          linkedin_url?: string | null
+          joined_at?: string
+          processed_at?: string | null
+        }
+      }
+      announcements: {
+        Row: {
+          id: string
+          title: string
+          text: string
+          visibility: boolean
+          type: 'alert' | 'info' | 'warning' | 'maintenance'
+          show_banner: boolean
+          created_by: string
+          created_at: string
+          expires_at: string | null
+        }
+        Insert: {
+          id?: string
+          title: string
+          text: string
+          visibility?: boolean
+          type?: 'alert' | 'info' | 'warning' | 'maintenance'
+          show_banner?: boolean
+          created_by: string
+          created_at?: string
+          expires_at?: string | null
+        }
+        Update: {
+          id?: string
+          title?: string
+          text?: string
+          visibility?: boolean
+          type?: 'alert' | 'info' | 'warning' | 'maintenance'
+          show_banner?: boolean
+          created_by?: string
+          created_at?: string
+          expires_at?: string | null
+        }
+      }
+      usage_metrics: {
+        Row: {
+          id: string
+          user_id: string
+          event_type: 'coffee_chat' | 'event_rsvp' | 'mastermind_created' | 'intro_made' | 'event_hosted'
+          timestamp: string
+          metadata: Record<string, any> | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          event_type: 'coffee_chat' | 'event_rsvp' | 'mastermind_created' | 'intro_made' | 'event_hosted'
+          timestamp?: string
+          metadata?: Record<string, any> | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          event_type?: 'coffee_chat' | 'event_rsvp' | 'mastermind_created' | 'intro_made' | 'event_hosted'
+          timestamp?: string
+          metadata?: Record<string, any> | null
+        }
+      }
+      events: {
+        Row: {
+          id: string
+          title: string
+          description: string | null
+          date: string
+          time: string
+          location: string | null
+          creator_id: string
+          type: 'workshop' | 'mastermind' | 'social' | 'charity' | 'launch'
+          visibility: 'connections' | 'open_invite'
+          max_attendees: number | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          title: string
+          description?: string | null
+          date: string
+          time: string
+          location?: string | null
+          creator_id: string
+          type: 'workshop' | 'mastermind' | 'social' | 'charity' | 'launch'
+          visibility?: 'connections' | 'open_invite'
+          max_attendees?: number | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          title?: string
+          description?: string | null
+          date?: string
+          time?: string
+          location?: string | null
+          creator_id?: string
+          type?: 'workshop' | 'mastermind' | 'social' | 'charity' | 'launch'
+          visibility?: 'connections' | 'open_invite'
+          max_attendees?: number | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
     }
   }
 }

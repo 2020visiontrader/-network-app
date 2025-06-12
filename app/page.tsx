@@ -18,29 +18,30 @@ export default function HomePage() {
         const { data: { session } } = await supabase.auth.getSession()
 
         if (session) {
-          // User is logged in, check their profile status
-          const { data: userData, error } = await supabase
-            .from('users')
-            .select('status, profile_progress')
+          // User is logged in, check their founder status
+          const { data: founderData } = await supabase
+            .from('founders')
+            .select('is_verified, is_active, onboarding_completed, onboarding_step')
             .eq('id', session.user.id)
             .single()
 
-          if (error) {
-            console.error('Error fetching user data:', error)
-            setChecking(false)
-            return
-          }
-
-          // Redirect based on user status and profile completion
-          if (userData?.status === 'waitlisted') {
-            router.push('/waitlist')
-          } else if (!userData || userData.profile_progress < 100) {
-            router.push('/onboarding/profile')
-          } else if (userData.status === 'active') {
-            router.push('/dashboard')
+          if (founderData) {
+            // User exists in founders table
+            if (!founderData.is_active) {
+              // Log out inactive founders
+              await supabase.auth.signOut()
+              setChecking(false)
+              return
+            } else if (!founderData.onboarding_completed) {
+              router.push('/onboarding')
+            } else if (founderData.is_verified && founderData.is_active) {
+              router.push('/dashboard')
+            } else {
+              setChecking(false)
+            }
           } else {
-            // User exists but has other status, show login
-            setChecking(false)
+            // Founder not found, redirect to onboarding for new users
+            router.push('/onboarding')
           }
         } else {
           // No session, show login screen
@@ -79,22 +80,22 @@ export default function HomePage() {
       {/* LEFT SIDE — VALUE PROP */}
       <div className="relative z-10 w-full lg:w-1/2 text-left py-12">
         <h1 className="text-4xl md:text-5xl font-extrabold mb-6 bg-gradient-to-r from-purple-500 to-indigo-400 text-transparent bg-clip-text">
-          Activate Your Hive
+          Network for Founders
         </h1>
         <p className="text-gray-400 text-lg mb-6 max-w-xl">
-          This isn't just another login screen. You're entering a private founder network designed for high-trust collaboration. Inside:
+          Join an exclusive community of 250 verified startup founders. Mobile-first networking designed for builders:
         </p>
 
         <ul className="text-sm text-white space-y-3 mb-8 list-disc list-inside">
-          <li>🤝 Make curated intros between trusted contacts</li>
-          <li>💡 Host or join mastermind groups with aligned founders</li>
-          <li>☕ Schedule meaningful coffee chats — in person or remote</li>
-          <li>🌎 Sync with fellow travelers, investors, and mentors</li>
-          <li>💼 Discover high-trust co-founder, buy/sell/invest opportunities</li>
+          <li>☕ Book coffee chats with fellow founders (3/day limit)</li>
+          <li>🤝 Connect with founders in your industry or stage</li>
+          <li>📅 Join founder events, demo days, and workshops</li>
+          <li>📱 Real-time notifications for networking opportunities</li>
+          <li>🔐 Verified founder-only community (250 member cap)</li>
         </ul>
 
         <p className="text-xs text-gray-500 italic mb-6">
-          Network is invite-only. If you're approved, your email will unlock full access.
+          Direct onboarding for verified founders. Free tier limited to first 250 members.
         </p>
 
         <div className="flex space-x-4 text-sm">
@@ -112,7 +113,7 @@ export default function HomePage() {
               !isLogin ? 'text-purple-400 underline' : 'text-gray-400 hover:text-white'
             }`}
           >
-            Not a member? Request access
+            New to Network? Join now
           </button>
         </div>
       </div>

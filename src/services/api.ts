@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase'
-import type { Database } from '@/lib/supabase'
+import type { Database } from '@/lib/database.types'
 
 // Type aliases for easier use
 type Tables = Database['public']['Tables']

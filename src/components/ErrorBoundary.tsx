@@ -86,7 +86,7 @@ const DefaultErrorFallback: React.FC<{ error?: Error; retry: () => void }> = ({ 
           </button>
           
           <Link
-            href="/dashboard?demo=true"
+            href="/dashboard"
             className="btn-mobile-secondary w-full inline-block text-center"
           >
             Return to Hub

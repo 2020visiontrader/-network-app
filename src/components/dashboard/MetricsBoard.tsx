@@ -1,5 +1,8 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { supabase } from '@/lib/supabase'
+import { useApp } from '@/components/providers/AppProvider'
 
 interface NetworkMetrics {
   totalConnections: number
@@ -21,7 +24,7 @@ const mockMetrics: NetworkMetrics = {
   growthPercentage: 34
 }
 
-const industryData = [
+const mockIndustryData = [
   { name: 'Tech', count: 12, color: 'bg-purple-500' },
   { name: 'Finance', count: 8, color: 'bg-blue-500' },
   { name: 'Creative', count: 5, color: 'bg-yellow-500' },
@@ -30,7 +33,107 @@ const industryData = [
 
 export default function MetricsBoard() {
   const [activeTab, setActiveTab] = useState<'overview' | 'growth' | 'influence'>('overview')
-  const metrics = mockMetrics
+  const [metrics, setMetrics] = useState<NetworkMetrics>(mockMetrics)
+  const [industryData, setIndustryData] = useState(mockIndustryData)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState('')
+  const { user } = useApp()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (!user) return
+
+    loadNetworkMetrics()
+  }, [user])
+
+  const loadNetworkMetrics = async () => {
+    if (!user) return
+
+    try {
+      setIsLoading(true)
+      setError('')
+
+      // Get total connections count
+      const { count: totalConnections } = await supabase
+        .from('users')
+        .select('*', { count: 'exact', head: true })
+        .neq('status', 'suspended')
+
+      // Get cities reached
+      const { data: citiesData } = await supabase
+        .from('users')
+        .select('city')
+        .not('city', 'is', null)
+
+      const uniqueCities = new Set(citiesData?.map(u => u.city).filter(Boolean))
+      const citiesReached = uniqueCities.size
+
+      // Get industry breakdown
+      const { data: usersData } = await supabase
+        .from('users')
+        .select('industries')
+        .not('industries', 'is', null)
+
+      const industryCount: { [key: string]: number } = {}
+      usersData?.forEach(user => {
+        if (user.industries && Array.isArray(user.industries)) {
+          user.industries.forEach((industry: string) => {
+            industryCount[industry] = (industryCount[industry] || 0) + 1
+          })
+        }
+      })
+
+      const topIndustries = Object.entries(industryCount)
+        .sort(([,a], [,b]) => b - a)
+        .slice(0, 4)
+        .map(([name, count], index) => ({
+          name,
+          count,
+          color: ['bg-purple-500', 'bg-blue-500', 'bg-yellow-500', 'bg-green-500'][index] || 'bg-gray-500'
+        }))
+
+      const topIndustry = topIndustries[0]?.name || 'Tech'
+
+      // Get meetings this month
+      const startOfMonth = new Date()
+      startOfMonth.setDate(1)
+      startOfMonth.setHours(0, 0, 0, 0)
+
+      const { count: meetingsThisMonth } = await supabase
+        .from('coffee_chats')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .gte('created_at', startOfMonth.toISOString())
+
+      // Get introductions made
+      const { count: introductionsMade } = await supabase
+        .from('introductions')
+        .select('*', { count: 'exact', head: true })
+        .eq('requester_id', user.id)
+
+      // Calculate growth percentage (mock for now)
+      const growthPercentage = Math.floor(Math.random() * 50) + 10
+
+      setMetrics({
+        totalConnections: totalConnections || 0,
+        verifiedConnections: Math.floor((totalConnections || 0) * 0.85),
+        citiesReached,
+        topIndustry,
+        meetingsThisMonth: meetingsThisMonth || 0,
+        introductionsMade: introductionsMade || 0,
+        growthPercentage
+      })
+
+      setIndustryData(topIndustries)
+
+    } catch (error) {
+      console.error('Error loading network metrics:', error)
+      setError('Failed to load metrics')
+      // Keep mock data as fallback
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   return (
     <div className="bg-zinc-900/70 border border-zinc-800 p-6 rounded-2xl shadow-xl backdrop-blur-sm">
@@ -108,7 +211,7 @@ export default function MetricsBoard() {
             <div className="h-32 flex items-end justify-between space-x-1">
               {[8, 12, 15, 18, 23, 27].map((value, index) => (
                 <div key={index} className="flex-1 flex flex-col items-center">
-                  <div 
+                  <div
                     className="w-full bg-gradient-to-t from-purple-600 to-purple-400 rounded-t"
                     style={{ height: `${(value / 27) * 100}%` }}
                   />
@@ -175,7 +278,10 @@ export default function MetricsBoard() {
             <p className="text-xs text-gray-300 mb-3">
               Your high engagement qualifies you for our Ambassador program
             </p>
-            <button className="w-full bg-gradient-to-r from-yellow-500 to-purple-500 text-black font-semibold py-2 rounded-lg hover:shadow-lg transition">
+            <button
+              onClick={() => router.push('/ambassador')}
+              className="w-full bg-gradient-to-r from-yellow-500 to-purple-500 text-black font-semibold py-2 rounded-lg hover:shadow-lg transition"
+            >
               Learn More
             </button>
           </div>
@@ -184,7 +290,10 @@ export default function MetricsBoard() {
 
       {/* Action Button */}
       <div className="mt-6 pt-6 border-t border-zinc-700">
-        <button className="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-3 rounded-lg transition shadow-lg hover:shadow-xl">
+        <button
+          onClick={() => router.push('/contacts')}
+          className="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-3 rounded-lg transition shadow-lg hover:shadow-xl"
+        >
           View Connection Map
         </button>
       </div>
