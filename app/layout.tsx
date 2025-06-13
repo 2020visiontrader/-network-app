@@ -64,6 +64,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        <script src="/error-handler.js" />
+      </head>
       <body className={inter.className}>
         <ErrorBoundary>
           <AppProvider>

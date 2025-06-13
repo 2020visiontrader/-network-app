@@ -56,39 +56,41 @@ export default function RouteProtection({ children, user, isLoading = false }: R
   const router = useRouter()
   const pathname = usePathname()
   const [mounted, setMounted] = useState(false)
+  const [isRedirecting, setIsRedirecting] = useState(false)
 
   useEffect(() => {
     setMounted(true)
   }, [])
 
   useEffect(() => {
-    if (!mounted) return
+    if (!mounted || isLoading || isRedirecting) return
     
     const matchingConfig = routeConfigs.find(config => 
       pathname?.startsWith(config.path) || pathname === config.path
     ) || { requiresAuth: true, requiresComplete: true, allowedStatuses: ['active'] }
 
     // Determine redirect path
-    let redirectPath = '/'
+    let redirectPath = null
     if (!user && matchingConfig.requiresAuth) {
       redirectPath = '/login'
     } else if (user) {
-      if (!user.onboarding_completed && pathname !== '/onboarding') {
-        redirectPath = '/onboarding'
-      } else if (matchingConfig.requiresComplete && !user.onboarding_completed) {
+      if (!user.onboarding_completed && pathname !== '/onboarding' && matchingConfig.requiresComplete) {
         redirectPath = '/onboarding'
       } else if (matchingConfig.allowedStatuses && !user.is_active) {
         redirectPath = '/status'
       }
     }
 
-    // Perform redirect if needed
-    if (pathname !== redirectPath && redirectPath !== '/') {
-      router.replace(redirectPath)
-      return
+    // Perform redirect if needed with debouncing
+    if (redirectPath && pathname !== redirectPath && redirectPath !== '/') {
+      setIsRedirecting(true)
+      setTimeout(() => {
+        router.replace(redirectPath)
+        setTimeout(() => setIsRedirecting(false), 1000)
+      }, 100)
     }
 
-  }, [pathname, user, mounted, router])
+  }, [pathname, user, mounted, router, isLoading, isRedirecting])
 
   // Don't render anything during initial mount to prevent hydration issues
   if (!mounted) return null

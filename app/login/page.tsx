@@ -47,7 +47,9 @@ export default function LoginPage() {
             <label htmlFor="email" className="block text-sm mb-1 text-gray-300">Email</label>
             <input
               id="email"
+              name="email"
               type="email"
+              autoComplete="email"
               placeholder="Enter your email"
               className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm placeholder-gray-500"
             />
@@ -56,7 +58,9 @@ export default function LoginPage() {
             <label htmlFor="password" className="block text-sm mb-1 text-gray-300">Password</label>
             <input
               id="password"
+              name="password"
               type="password"
+              autoComplete="current-password"
               placeholder="Enter your password"
               className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm placeholder-gray-500"
             />

@@ -49,7 +49,12 @@ export default function AppProvider({ children }: AppProviderProps) {
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     );
 
+    let isInitializing = false;
+
     async function initializeAuth() {
+      if (isInitializing) return;
+      isInitializing = true;
+
       try {
         const { data: { session } } = await supabase.auth.getSession()
         
@@ -68,24 +73,31 @@ export default function AppProvider({ children }: AppProviderProps) {
         console.error('Auth initialization error:', error)
       } finally {
         setIsLoading(false)
+        isInitializing = false;
       }
     }
 
-    // Set up auth listener
+    // Set up auth listener with debouncing
+    let authTimeout: NodeJS.Timeout;
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        setIsLoading(true)
-        if (session) {
-          const { data: userData } = await supabase
-            .from('founders')
-            .select('*')
-            .eq('id', session.user.id)
-            .single()
-          setUser(userData)
-        } else {
-          setUser(null)
-        }
-        setIsLoading(false)
+        clearTimeout(authTimeout);
+        authTimeout = setTimeout(async () => {
+          if (isInitializing) return;
+          
+          setIsLoading(true)
+          if (session) {
+            const { data: userData } = await supabase
+              .from('founders')
+              .select('*')
+              .eq('id', session.user.id)
+              .single()
+            setUser(userData)
+          } else {
+            setUser(null)
+          }
+          setIsLoading(false)
+        }, 300); // Debounce rapid auth changes
       }
     )
 
@@ -93,6 +105,7 @@ export default function AppProvider({ children }: AppProviderProps) {
 
     // Cleanup subscription
     return () => {
+      clearTimeout(authTimeout);
       subscription.unsubscribe()
     }
   }, [hasMounted])

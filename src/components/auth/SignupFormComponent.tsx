@@ -216,6 +216,7 @@ export default function SignupFormComponent({ onToggleForm }: SignupFormProps) {
             type="text"
             id="name"
             name="name"
+            autoComplete="name"
             value={formData.name}
             onChange={handleInputChange}
             placeholder="Jordan Oram"
@@ -231,6 +232,7 @@ export default function SignupFormComponent({ onToggleForm }: SignupFormProps) {
             type="email"
             id="email"
             name="email"
+            autoComplete="email"
             value={formData.email}
             onChange={handleInputChange}
             placeholder="you@example.com"
@@ -246,6 +248,7 @@ export default function SignupFormComponent({ onToggleForm }: SignupFormProps) {
             type="text"
             id="company"
             name="company"
+            autoComplete="organization"
             value={formData.company}
             onChange={handleInputChange}
             placeholder="Your startup or company"
@@ -261,6 +264,7 @@ export default function SignupFormComponent({ onToggleForm }: SignupFormProps) {
             type="url"
             id="linkedin"
             name="linkedin"
+            autoComplete="url"
             value={formData.linkedin}
             onChange={handleInputChange}
             placeholder="https://linkedin.com/in/..."

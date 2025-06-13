@@ -150,7 +150,9 @@ export default function LoginFormComponent({ onToggleForm }: LoginFormProps) {
           <label htmlFor="email" className="block text-sm mb-1 text-gray-300">Email</label>
           <input
             id="email"
+            name="email"
             type="email"
+            autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Enter your email"
@@ -173,7 +175,9 @@ export default function LoginFormComponent({ onToggleForm }: LoginFormProps) {
           </div>
           <input
             id="password"
+            name="password"
             type="password"
+            autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Enter your password"
