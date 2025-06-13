@@ -146,9 +146,8 @@ export default function AppProvider({ children }: AppProviderProps) {
         // No automatic demo user - require actual login
       } catch (error) {
         console.error('Auth initialization failed:', error)
-      } finally {
-        setIsLoading(false)
       }
+      // Note: isLoading will be set by the main auth effect above
     }
 
     initializeAuth()
