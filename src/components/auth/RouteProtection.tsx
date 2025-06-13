@@ -1,16 +1,10 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
-interface User {
-  id: string
-  name: string
-  email: string
-  status: 'active' | 'pending' | 'waitlisted' | 'suspended'
-  profile_progress: number
-  is_ambassador: boolean
-  created_at: string
-}
 import HiveHexGrid from '@/components/HiveHexGrid'
+import type { Database } from '@/lib/database.types'
+
+type User = Database['public']['Tables']['founders']['Row']
 
 interface RouteProtectionProps {
   children: React.ReactNode
@@ -32,6 +26,9 @@ const routeConfigs: RouteConfig[] = [
   { path: '/login', requiresAuth: false, requiresComplete: false },
   { path: '/signup', requiresAuth: false, requiresComplete: false },
   { path: '/thank-you', requiresAuth: false, requiresComplete: false },
+  { path: '/reset-password', requiresAuth: false, requiresComplete: false },
+  { path: '/closed', requiresAuth: false, requiresComplete: false },
+  { path: '/apply', requiresAuth: false, requiresComplete: false },
 
   // Auth required but incomplete profile allowed
   { path: '/auth/callback', requiresAuth: true, requiresComplete: false },
@@ -43,108 +40,68 @@ const routeConfigs: RouteConfig[] = [
   { path: '/onboarding/verify', requiresAuth: true, requiresComplete: false },
   { path: '/onboarding/complete', requiresAuth: true, requiresComplete: false },
 
-
-
   // Protected routes requiring complete profile
   { path: '/dashboard', requiresAuth: true, requiresComplete: true, allowedStatuses: ['active'] },
   { path: '/coffee-chats', requiresAuth: true, requiresComplete: true, allowedStatuses: ['active'] },
   { path: '/coffee-chat', requiresAuth: true, requiresComplete: true, allowedStatuses: ['active'] },
-  { path: '/masterminds', requiresAuth: true, requiresComplete: true, allowedStatuses: ['active'] },
-  { path: '/mastermind', requiresAuth: true, requiresComplete: true, allowedStatuses: ['active'] },
-  { path: '/events', requiresAuth: true, requiresComplete: true, allowedStatuses: ['active'] },
-  { path: '/events/create', requiresAuth: true, requiresComplete: true, allowedStatuses: ['active'] },
-  { path: '/hive', requiresAuth: true, requiresComplete: true, allowedStatuses: ['active'] },
-  { path: '/introductions', requiresAuth: true, requiresComplete: true, allowedStatuses: ['active'] },
-  { path: '/opportunities', requiresAuth: true, requiresComplete: true, allowedStatuses: ['active'] },
-  { path: '/travel', requiresAuth: true, requiresComplete: true, allowedStatuses: ['active'] },
   { path: '/contacts', requiresAuth: true, requiresComplete: true, allowedStatuses: ['active'] },
+  { path: '/events', requiresAuth: true, requiresComplete: true, allowedStatuses: ['active'] },
+  { path: '/mastermind', requiresAuth: true, requiresComplete: true, allowedStatuses: ['active'] },
   { path: '/calendar', requiresAuth: true, requiresComplete: true, allowedStatuses: ['active'] },
-  { path: '/birthdays', requiresAuth: true, requiresComplete: true, allowedStatuses: ['active'] },
-  { path: '/profile', requiresAuth: true, requiresComplete: true, allowedStatuses: ['active'] },
-  { path: '/settings', requiresAuth: true, requiresComplete: true, allowedStatuses: ['active'] },
+  { path: '/ambassador', requiresAuth: true, requiresComplete: true, allowedStatuses: ['active'] },
   { path: '/status', requiresAuth: true, requiresComplete: true, allowedStatuses: ['active'] },
-
-  // Ambassador routes
-  { path: '/ambassador', requiresAuth: true, requiresComplete: true, allowedStatuses: ['active'] }
 ]
 
-export default function RouteProtection({ children, user, isLoading }: RouteProtectionProps) {
+export default function RouteProtection({ children, user, isLoading = false }: RouteProtectionProps) {
   const router = useRouter()
   const pathname = usePathname()
-  const [isChecking, setIsChecking] = useState(true)
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    if (isLoading) return
+    setMounted(true)
+  }, [])
 
-    const checkRoute = () => {
-      // Find matching route config
-      const routeConfig = routeConfigs.find(config =>
-        pathname === config.path ||
-        (config.path.includes('[') && pathname.startsWith(config.path.split('[')[0]))
-      )
+  useEffect(() => {
+    if (!mounted) return
+    
+    const matchingConfig = routeConfigs.find(config => 
+      pathname?.startsWith(config.path) || pathname === config.path
+    ) || { requiresAuth: true, requiresComplete: true, allowedStatuses: ['active'] }
 
-      // Default to protected route if no config found
-      const config = routeConfig || {
-        path: pathname,
-        requiresAuth: true,
-        requiresComplete: true,
-        allowedStatuses: ['active']
+    // Determine redirect path
+    let redirectPath = '/'
+    if (!user && matchingConfig.requiresAuth) {
+      redirectPath = '/login'
+    } else if (user) {
+      if (!user.onboarding_completed && pathname !== '/onboarding') {
+        redirectPath = '/onboarding'
+      } else if (matchingConfig.requiresComplete && !user.onboarding_completed) {
+        redirectPath = '/onboarding'
+      } else if (matchingConfig.allowedStatuses && !user.is_active) {
+        redirectPath = '/status'
       }
-
-      // Check authentication requirement
-      if (config.requiresAuth && !user) {
-        router.push('/login')
-        return
-      }
-
-      // If user exists, check their status and profile completion
-      if (user) {
-        // Check if user status is allowed for this route
-        if (config.allowedStatuses && !config.allowedStatuses.includes(user.status)) {
-          if (user.status === 'suspended') {
-            router.push('/suspended')
-            return
-          }
-        }
-
-        // Check profile completion requirement
-        if (config.requiresComplete && user.profile_progress < 100) {
-          // Don't redirect if already on onboarding pages
-          if (!pathname.startsWith('/onboarding')) {
-            router.push('/onboarding/profile')
-            return
-          }
-        }
-
-        // Redirect completed users away from onboarding
-        if (pathname.startsWith('/onboarding') && user.profile_progress >= 100) {
-          router.push('/dashboard')
-          return
-        }
-
-
-      }
-
-      setIsChecking(false)
     }
 
-    checkRoute()
-  }, [user, isLoading, pathname, router])
+    // Perform redirect if needed
+    if (pathname !== redirectPath && redirectPath !== '/') {
+      router.replace(redirectPath)
+      return
+    }
+
+  }, [pathname, user, mounted, router])
+
+  // Don't render anything during initial mount to prevent hydration issues
+  if (!mounted) return null
 
   // Show loading state
-  if (isLoading || isChecking) {
+  if (isLoading) {
     return (
-      <main className="min-h-screen bg-gradient-to-b from-black via-purple-950/10 to-black text-white relative overflow-hidden">
-        <HiveHexGrid />
-
-        <div className="relative z-10 flex items-center justify-center min-h-screen">
-          <div className="text-center">
-            <div className="w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-purple-300 text-lg">Connecting to Network...</p>
-            <p className="text-gray-400 text-sm mt-2">Verifying access permissions</p>
-          </div>
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-purple-300">Loading...</p>
         </div>
-      </main>
+      </div>
     )
   }
 
@@ -161,13 +118,13 @@ export function useRouteAccess(user: User | null) {
     const routeConfig = routeConfigs.find(config => config.path === targetPath)
     if (!routeConfig) return false
 
-    // Check status
-    if (routeConfig.allowedStatuses && !routeConfig.allowedStatuses.includes(user.status)) {
+    // Check status - use is_active instead of status
+    if (routeConfig.allowedStatuses && !user.is_active) {
       return false
     }
 
-    // Check profile completion
-    if (routeConfig.requiresComplete && user.profile_progress < 100) {
+    // Check profile completion - use onboarding_completed instead of profile_progress
+    if (routeConfig.requiresComplete && !user.onboarding_completed) {
       return false
     }
 
@@ -177,9 +134,8 @@ export function useRouteAccess(user: User | null) {
   const getRedirectPath = (): string | null => {
     if (!user) return '/login'
 
-    if (user.status === 'waitlisted') return '/waitlist'
-    if (user.status === 'suspended') return '/suspended'
-    if (user.profile_progress < 100) return '/onboarding/profile'
+    if (!user.is_active) return '/suspended'
+    if (!user.onboarding_completed) return '/onboarding/profile'
 
     return null
   }
@@ -187,7 +143,7 @@ export function useRouteAccess(user: User | null) {
   return {
     canAccess,
     getRedirectPath,
-    isComplete: user ? user.profile_progress >= 100 : false,
-    isActive: user?.status === 'active'
+    isComplete: user ? !!user.onboarding_completed : false,
+    isActive: user?.is_active || false
   }
 }

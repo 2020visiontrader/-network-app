@@ -32,7 +32,7 @@ export const submitWaitlist = async (formData: WaitlistFormData) => {
         {
           full_name,
           email,
-          linkedin_url: linkedin_url || null,
+          linkedin_url: linkedin_url || '', // Ensure it's a string, not null
           company_name,
           funding_stage: niche, // Map niche to funding_stage
           brief_description: goals,

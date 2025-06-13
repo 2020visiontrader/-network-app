@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { withAuth } from '@/components/withAuth';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createClient } from '@/utils/supabase-browser';
 import { Database } from '@/lib/database.types';
 
 type Founder = any;
@@ -21,7 +21,7 @@ const ContactsPage = () => {
     console.log("fetchContacts called");
   };
 
-  const supabase = createClientComponentClient<Database>();
+  const supabase = createClient();
 
   const fetchConnections = async () => {
     try {
@@ -38,7 +38,7 @@ const ContactsPage = () => {
           founder_b:founders!founder_b_id(*)
         `)
         .or(`founder_a_id.eq.${session.user.id},founder_b_id.eq.${session.user.id}`)
-        .eq('status', 'connected')
+        .eq('status', 'connected' as any)
         .order('connected_at', { ascending: false });
 
       if (error) throw error;

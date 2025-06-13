@@ -55,31 +55,29 @@ export default function MetricsBoard() {
 
       // Get total connections count
       const { count: totalConnections } = await supabase
-        .from('users')
+        .from('founders')
         .select('*', { count: 'exact', head: true })
         .neq('status', 'suspended')
 
       // Get cities reached
       const { data: citiesData } = await supabase
-        .from('users')
-        .select('city')
-        .not('city', 'is', null)
+        .from('founders')
+        .select('location_city')
+        .not('location_city', 'is', null)
 
-      const uniqueCities = new Set(citiesData?.map(u => u.city).filter(Boolean))
+      const uniqueCities = new Set(citiesData?.map(u => u.location_city).filter(Boolean))
       const citiesReached = uniqueCities.size
 
       // Get industry breakdown
       const { data: usersData } = await supabase
-        .from('users')
-        .select('industries')
-        .not('industries', 'is', null)
+        .from('founders')
+        .select('industry')
+        .not('industry', 'is', null)
 
       const industryCount: { [key: string]: number } = {}
       usersData?.forEach(user => {
-        if (user.industries && Array.isArray(user.industries)) {
-          user.industries.forEach((industry: string) => {
-            industryCount[industry] = (industryCount[industry] || 0) + 1
-          })
+        if (user.industry) {
+          industryCount[user.industry] = (industryCount[user.industry] || 0) + 1
         }
       })
 
@@ -107,7 +105,7 @@ export default function MetricsBoard() {
 
       // Get introductions made
       const { count: introductionsMade } = await supabase
-        .from('introductions')
+        .from('connections')
         .select('*', { count: 'exact', head: true })
         .eq('requester_id', user.id)
 

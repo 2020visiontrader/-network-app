@@ -1,13 +1,30 @@
 'use client'
+
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import OnboardingProgress from '@/components/OnboardingProgress'
+import { supabase } from '@/lib/supabase'
+
+interface OnboardingFormData {
+  linkedinUrl: string
+  workEmail: string
+  industry: string
+  tagline: string
+  location_city: string
+  governmentId?: File | null
+  proofOfInPerson?: string
+}
 
 export default function OnboardingVerify() {
-  const [formData, setFormData] = useState({
+  const router = useRouter()
+  const [isLoading, setIsLoading] = useState(false)
+  const [formData, setFormData] = useState<OnboardingFormData>({
     linkedinUrl: '',
     workEmail: '',
-    governmentId: null as File | null,
+    industry: '',
+    tagline: '',
+    location_city: '',
     proofOfInPerson: ''
   })
 

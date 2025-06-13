@@ -3,17 +3,21 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import { Database } from '@/lib/database.types';
+import { createBrowserClient } from '@supabase/ssr';
+import { Database } from '../../../lib/database.types';
 
-type Role = Database['public']['Tables']['users']['Row']['role'];
+type Role = 'member' | 'mentor' | 'mentee' | 'ambassador' | 'founder';
 
 export default function SignUpPage() {
-  const supabase = createClientComponentClient<Database>();
+  const supabase = createBrowserClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
   const [formData, setFormData] = useState({
     email: '',
     password: '',
     fullName: '',
+    companyName: '',
     preferredName: '',
     role: 'member' as Role,
     city: '',
@@ -53,21 +57,21 @@ export default function SignUpPage() {
 
       // Check if user was created successfully
       if (data.user) {
-        // Try to create user profile in users table, but don't fail if table doesn't exist
+        // Try to create user profile in founders table, but don't fail if table doesn't exist
         try {
           const { error: profileError } = await supabase
-            .from('users')
+            .from('founders')
             .insert([
               {
                 id: data.user.id,
                 email: formData.email,
                 full_name: formData.fullName,
-                preferred_name: formData.preferredName,
-                role: formData.role,
-                city: formData.city,
-                niche: formData.niche,
+                company_name: formData.companyName || 'Startup',
+                role: formData.role || 'founder',
+                location_city: formData.city,
+                industry: formData.niche,
                 linkedin_url: formData.linkedinUrl,
-                website_url: formData.websiteUrl,
+                company_website: formData.websiteUrl,
               },
             ]);
 

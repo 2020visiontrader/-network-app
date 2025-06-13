@@ -3,16 +3,10 @@ import { useState, useEffect, createContext, useContext } from 'react'
 import { usePathname } from 'next/navigation'
 import GlobalNavigation from '@/components/navigation/GlobalNavigation'
 import RouteProtection from '@/components/auth/RouteProtection'
-import { supabase } from '@/lib/supabase'
-interface User {
-  id: string
-  name: string
-  email: string
-  status: 'active' | 'pending' | 'waitlisted' | 'suspended'
-  profile_progress: number
-  is_ambassador: boolean
-  created_at: string
-}
+import { createBrowserClient } from '@supabase/ssr'
+import type { Database } from '@/lib/database.types'
+
+type User = Database['public']['Tables']['founders']['Row']
 
 interface AppContextType {
   user: User | null
@@ -46,6 +40,63 @@ export default function AppProvider({ children }: AppProviderProps) {
     setHasMounted(true)
   }, [])
 
+  // Handle auth state changes after mount
+  useEffect(() => {
+    if (!hasMounted) return
+
+    const supabase = createBrowserClient<Database>(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+
+    async function initializeAuth() {
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        
+        if (session) {
+          const { data: userData, error } = await supabase
+            .from('founders')
+            .select('*')
+            .eq('id', session.user.id)
+            .single()
+
+          if (!error && userData) {
+            setUser(userData)
+          }
+        }
+      } catch (error) {
+        console.error('Auth initialization error:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    // Set up auth listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        setIsLoading(true)
+        if (session) {
+          const { data: userData } = await supabase
+            .from('founders')
+            .select('*')
+            .eq('id', session.user.id)
+            .single()
+          setUser(userData)
+        } else {
+          setUser(null)
+        }
+        setIsLoading(false)
+      }
+    )
+
+    initializeAuth()
+
+    // Cleanup subscription
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [hasMounted])
+
   // Routes that should not show navigation
   const noNavRoutes = [
     '/',
@@ -64,8 +115,8 @@ export default function AppProvider({ children }: AppProviderProps) {
   const showNavigation = user &&
     !noNavRoutes.includes(pathname) &&
     !onboardingRoutes &&
-    user.profile_progress >= 100 &&
-    user.status === 'active'
+    user.onboarding_completed &&
+    user.is_active
 
   useEffect(() => {
     // Initialize user authentication only after mounting
@@ -92,6 +143,11 @@ export default function AppProvider({ children }: AppProviderProps) {
 
   const logout = async () => {
     try {
+      const supabase = createBrowserClient<Database>(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      );
+      
       // Sign out from Supabase if user is authenticated
       const { error } = await supabase.auth.signOut()
       if (error) {

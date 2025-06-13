@@ -1,0 +1,458 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { createBrowserClient } from '@supabase/ssr';
+import { useApp } from '@/components/providers/AppProvider';
+import type { Database } from '@/lib/database.types';
+
+// Force dynamic rendering to prevent SSG issues
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
+interface Event {
+  id: string;
+  title: string;
+  description: string | null;
+  start_time: string;
+  end_time: string | null;
+  location: string | null;
+  virtual_link: string | null;
+  max_attendees: number | null;
+  is_free: boolean;
+  event_type: string;
+  organizer_id: string;
+  created_at: string;
+  organizer?: {
+    full_name: string;
+    company_name: string | null;
+  };
+  attendees_count?: number;
+}
+
+interface NewEvent {
+  title: string;
+  description: string;
+  start_time: string;
+  end_time: string;
+  location: string;
+  virtual_link: string;
+  max_attendees: number;
+  is_free: boolean;
+  event_type: string;
+}
+
+export default function EventsPage() {
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const { user } = useApp();
+
+  const [newEvent, setNewEvent] = useState<NewEvent>({
+    title: '',
+    description: '',
+    start_time: '',
+    end_time: '',
+    location: '',
+    virtual_link: '',
+    max_attendees: 20,
+    is_free: true,
+    event_type: 'networking'
+  });
+
+  useEffect(() => {
+    loadEvents();
+  }, []);
+
+  const loadEvents = async () => {
+    try {
+      setLoading(true);
+
+      const supabase = createBrowserClient<Database>(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      );
+
+      const { data: eventsData, error } = await supabase
+        .from('events')
+        .select(`
+          *,
+          organizer:founders!organizer_id (
+            full_name,
+            company_name
+          )
+        `)
+        .gte('start_time', new Date().toISOString())
+        .order('start_time', { ascending: true });
+
+      if (error) {
+        console.error('Error loading events:', error);
+        setEvents([]);
+        return;
+      }
+
+      // Get attendee counts for each event
+      const eventsWithCounts = await Promise.all(
+        (eventsData || []).map(async (event) => {
+          const { count } = await supabase
+            .from('event_attendees')
+            .select('*', { count: 'exact' })
+            .eq('event_id', event.id);
+          
+          return {
+            ...event,
+            attendees_count: count || 0
+          };
+        })
+      );
+
+      setEvents(eventsWithCounts);
+    } catch (error) {
+      console.error('Error loading events:', error);
+      setEvents([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCreateEvent = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user?.id) return;
+
+    try {
+      const supabase = createBrowserClient<Database>(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      );
+
+      const { error } = await supabase
+        .from('events')
+        .insert([{
+          ...newEvent,
+          organizer_id: user.id,
+          start_time: new Date(newEvent.start_time).toISOString(),
+          end_time: newEvent.end_time ? new Date(newEvent.end_time).toISOString() : null,
+        }]);
+
+      if (error) {
+        console.error('Error creating event:', error);
+        alert('Failed to create event. Please try again.');
+        return;
+      }
+
+      // Reset form
+      setNewEvent({
+        title: '',
+        description: '',
+        start_time: '',
+        end_time: '',
+        location: '',
+        virtual_link: '',
+        max_attendees: 20,
+        is_free: true,
+        event_type: 'networking'
+      });
+      setShowCreateForm(false);
+      
+      // Reload events
+      loadEvents();
+    } catch (error) {
+      console.error('Error creating event:', error);
+      alert('Failed to create event. Please try again.');
+    }
+  };
+
+  const handleJoinEvent = async (eventId: string) => {
+    if (!user?.id) return;
+
+    try {
+      const supabase = createBrowserClient<Database>(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      );
+
+      const { error } = await supabase
+        .from('event_attendees')
+        .insert([{
+          event_id: eventId,
+          attendee_id: user.id,
+          status: 'attending'
+        }]);
+
+      if (error) {
+        console.error('Error joining event:', error);
+        alert('Failed to join event. Please try again.');
+        return;
+      }
+
+      // Reload events to update attendee counts
+      loadEvents();
+    } catch (error) {
+      console.error('Error joining event:', error);
+      alert('Failed to join event. Please try again.');
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="sm:flex sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Events</h1>
+            <p className="mt-2 text-sm text-gray-700">
+              Discover and join networking events in your area
+            </p>
+          </div>
+          {user && (
+            <div className="mt-4 sm:mt-0">
+              <button
+                onClick={() => setShowCreateForm(true)}
+                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                Create Event
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Create Event Form */}
+        {showCreateForm && (
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+            <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+              <div className="mt-3">
+                <h3 className="text-lg font-medium text-gray-900 mb-4">Create New Event</h3>
+                <form onSubmit={handleCreateEvent} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Title</label>
+                    <input
+                      type="text"
+                      required
+                      value={newEvent.title}
+                      onChange={(e) => setNewEvent({...newEvent, title: e.target.value})}
+                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Description</label>
+                    <textarea
+                      value={newEvent.description}
+                      onChange={(e) => setNewEvent({...newEvent, description: e.target.value})}
+                      rows={3}
+                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Start Time</label>
+                    <input
+                      type="datetime-local"
+                      required
+                      value={newEvent.start_time}
+                      onChange={(e) => setNewEvent({...newEvent, start_time: e.target.value})}
+                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">End Time</label>
+                    <input
+                      type="datetime-local"
+                      value={newEvent.end_time}
+                      onChange={(e) => setNewEvent({...newEvent, end_time: e.target.value})}
+                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Location</label>
+                    <input
+                      type="text"
+                      value={newEvent.location}
+                      onChange={(e) => setNewEvent({...newEvent, location: e.target.value})}
+                      placeholder="Physical location or 'Virtual'"
+                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Virtual Link</label>
+                    <input
+                      type="url"
+                      value={newEvent.virtual_link}
+                      onChange={(e) => setNewEvent({...newEvent, virtual_link: e.target.value})}
+                      placeholder="Zoom, Meet, etc."
+                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Max Attendees</label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={newEvent.max_attendees}
+                      onChange={(e) => setNewEvent({...newEvent, max_attendees: parseInt(e.target.value)})}
+                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    />
+                  </div>
+
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={newEvent.is_free}
+                      onChange={(e) => setNewEvent({...newEvent, is_free: e.target.checked})}
+                      className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                    />
+                    <label className="ml-2 block text-sm text-gray-900">Free Event</label>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Event Type</label>
+                    <select
+                      value={newEvent.event_type}
+                      onChange={(e) => setNewEvent({...newEvent, event_type: e.target.value})}
+                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    >
+                      <option value="networking">Networking</option>
+                      <option value="workshop">Workshop</option>
+                      <option value="social">Social</option>
+                      <option value="conference">Conference</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+
+                  <div className="flex items-center space-x-3 pt-4">
+                    <button
+                      type="submit"
+                      className="inline-flex justify-center w-full rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm"
+                    >
+                      Create Event
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowCreateForm(false)}
+                      className="inline-flex justify-center w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Events List */}
+        <div className="mt-8">
+          {events.length === 0 ? (
+            <div className="text-center py-8">
+              <div className="text-4xl mb-4">🎪</div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No upcoming events</h3>
+              <p className="text-gray-500">Check back later or create your own event!</p>
+            </div>
+          ) : (
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {events.map((event) => (
+                <div key={event.id} className="bg-white rounded-lg shadow-md overflow-hidden">
+                  <div className="p-6">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                        {event.event_type}
+                      </span>
+                      {event.is_free && (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                          Free
+                        </span>
+                      )}
+                    </div>
+                    
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">{event.title}</h3>
+                    
+                    {event.description && (
+                      <p className="text-gray-600 text-sm mb-4 line-clamp-3">{event.description}</p>
+                    )}
+                    
+                    <div className="space-y-2 text-sm text-gray-500 mb-4">
+                      <div className="flex items-center">
+                        <span className="mr-2">📅</span>
+                        {formatDate(event.start_time)}
+                      </div>
+                      
+                      {event.location && (
+                        <div className="flex items-center">
+                          <span className="mr-2">📍</span>
+                          {event.location}
+                        </div>
+                      )}
+                      
+                      <div className="flex items-center">
+                        <span className="mr-2">👥</span>
+                        {event.attendees_count || 0}
+                        {event.max_attendees && ` / ${event.max_attendees}`} attendees
+                      </div>
+                      
+                      {event.organizer && (
+                        <div className="flex items-center">
+                          <span className="mr-2">👤</span>
+                          {event.organizer.full_name}
+                          {event.organizer.company_name && ` (${event.organizer.company_name})`}
+                        </div>
+                      )}
+                    </div>
+                    
+                    {user && (
+                      <div className="flex space-x-3">
+                        <button
+                          onClick={() => handleJoinEvent(event.id)}
+                          className="flex-1 bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                        >
+                          Join Event
+                        </button>
+                        
+                        {event.virtual_link && (
+                          <a
+                            href={event.virtual_link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex-1 bg-gray-100 text-gray-900 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 text-center"
+                          >
+                            Join Online
+                          </a>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

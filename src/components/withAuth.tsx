@@ -1,12 +1,12 @@
 'use client';
 
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createClient } from '@/utils/supabase-browser';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
 export function withAuth(WrappedComponent: React.ComponentType) {
   return function AuthenticatedComponent(props: any) {
-    const supabase = createClientComponentClient();
+    const supabase = createClient();
     const router = useRouter();
 
     useEffect(() => {

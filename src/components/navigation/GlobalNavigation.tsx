@@ -2,15 +2,9 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-interface User {
-  id: string
-  name: string
-  email: string
-  status: 'active' | 'pending' | 'waitlisted' | 'suspended'
-  profile_progress: number
-  is_ambassador: boolean
-  created_at: string
-}
+import type { Database } from '@/lib/database.types'
+
+type User = Database['public']['Tables']['founders']['Row']
 
 interface GlobalNavigationProps {
   user: User | null
@@ -96,11 +90,11 @@ export default function GlobalNavigation({ user, onLogout }: GlobalNavigationPro
             >
               <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
                 <span className="text-white font-semibold text-sm">
-                  {user.name?.charAt(0).toUpperCase() || 'U'}
+                  {user.full_name?.charAt(0).toUpperCase() || 'U'}
                 </span>
               </div>
               <span className="hidden sm:block text-white text-sm font-medium">
-                {user.name || 'User'}
+                {user.full_name || 'User'}
               </span>
               <svg
                 className={`w-4 h-4 text-gray-400 transition-transform ${
@@ -118,11 +112,11 @@ export default function GlobalNavigation({ user, onLogout }: GlobalNavigationPro
             {isProfileMenuOpen && (
               <div className="absolute right-0 mt-2 w-64 bg-zinc-900 border border-zinc-800 rounded-xl shadow-xl py-2">
                 <div className="px-4 py-3 border-b border-zinc-800">
-                  <p className="text-white font-medium">{user.name}</p>
+                  <p className="text-white font-medium">{user.full_name}</p>
                   <p className="text-gray-400 text-sm">{user.email}</p>
-                  {user.is_ambassador && (
-                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-500/20 text-yellow-400 mt-2">
-                      🐝 Ambassador
+                  {user.is_verified && (
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-500/20 text-blue-400 mt-2">
+                      ✓ Verified
                     </span>
                   )}
                 </div>
@@ -146,14 +140,14 @@ export default function GlobalNavigation({ user, onLogout }: GlobalNavigationPro
                     My Analytics
                   </Link>
 
-                  {user.is_ambassador && (
+                  {user.is_verified && (
                     <Link
-                      href="/ambassador"
+                      href="/verified"
                       className="flex items-center px-4 py-2 text-gray-300 hover:text-white hover:bg-zinc-800 transition-colors"
                       onClick={() => setIsProfileMenuOpen(false)}
                     >
-                      <span className="mr-3">🐝</span>
-                      Ambassador Panel
+                      <span className="mr-3">✓</span>
+                      Verified Panel
                     </Link>
                   )}
 

@@ -9,122 +9,102 @@ import { supabase } from '@/lib/supabase'
 
 export default function Home() {
   const [isLogin, setIsLogin] = useState(true)
-  const [checking, setChecking] = useState(true)
+  const [mounted, setMounted] = useState(false)
+  const [loading, setLoading] = useState(true)
   const router = useRouter()
 
   useEffect(() => {
+    setMounted(true)
+    
     async function checkSession() {
       try {
         const { data: { session } } = await supabase.auth.getSession()
-
         if (session) {
-          // User is logged in, check their founder status
-          const { data: founderData } = await supabase
+          // Check if user exists in founders table
+          const { data: founder } = await supabase
             .from('founders')
-            .select('is_verified, is_active, onboarding_completed, onboarding_step')
+            .select('onboarding_completed')
             .eq('id', session.user.id)
             .single()
 
-          if (founderData) {
-            // User exists in founders table
-            if (!founderData.is_active) {
-              // Log out inactive founders
-              await supabase.auth.signOut()
-              setChecking(false)
-              return
-            } else if (!founderData.onboarding_completed) {
-              router.push('/onboarding')
-            } else if (founderData.is_verified && founderData.is_active) {
-              router.push('/dashboard')
-            } else {
-              setChecking(false)
-            }
+          if (founder?.onboarding_completed) {
+            router.push('/dashboard')
           } else {
-            // Founder not found, redirect to onboarding for new users
-            router.push('/onboarding')
+            router.push('/onboarding/verify')
           }
-        } else {
-          // No session, show login screen
-          setChecking(false)
         }
       } catch (error) {
         console.error('Session check error:', error)
-        setChecking(false)
+      } finally {
+        setLoading(false)
       }
     }
-
+    
     checkSession()
   }, [router])
 
-  if (checking) {
-    return (
-      <main className="min-h-screen bg-black text-white flex items-center justify-center relative overflow-hidden">
-        <HiveHexGrid />
-        <div className="relative z-10 text-center">
-          <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-purple-300 animate-pulse">Checking login session...</p>
-        </div>
-      </main>
-    )
+  // Prevent hydration issues
+  if (!mounted || loading) {
+    return null
   }
 
   return (
-    <div style={{ 
-      padding: 80,
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      gap: 20
-    }}>
-      <h1 className="text-4xl md:text-5xl font-extrabold mb-6 bg-gradient-to-r from-purple-500 to-indigo-400 text-transparent bg-clip-text">
-        Network for Founders
-      </h1>
-      <p className="text-gray-400 text-lg mb-6 max-w-xl">
-        Join an exclusive community of 250 verified startup founders. Mobile-first networking designed for builders:
-      </p>
-
-      <ul className="text-sm text-white space-y-3 mb-8 list-disc list-inside">
-        <li>☕ Book coffee chats with fellow founders (3/day limit)</li>
-        <li>🤝 Connect with founders in your industry or stage</li>
-        <li>📅 Join founder events, demo days, and workshops</li>
-        <li>📱 Real-time notifications for networking opportunities</li>
-        <li>🔐 Verified founder-only community (250 member cap)</li>
-      </ul>
-
-      <p className="text-xs text-gray-500 italic mb-6">
-        Direct onboarding for verified founders. Free tier limited to first 250 members.
-      </p>
-
-      <div className="flex space-x-4 text-sm">
-        <button
-          onClick={() => setIsLogin(true)}
-          className={`px-4 py-2 rounded-lg transition ${
-            isLogin ? 'text-purple-400 underline' : 'text-gray-400 hover:text-white'
-          }`}
-        >
-          Already a member? Sign in
-        </button>
-        <button
-          onClick={() => setIsLogin(false)}
-          className={`px-4 py-2 rounded-lg transition ${
-            !isLogin ? 'text-purple-400 underline' : 'text-gray-400 hover:text-white'
-          }`}
-        >
-          New to Network? Join now
-        </button>
-      </div>
-
-      {/* Glows */}
-      <div className="absolute -top-32 -left-32 w-[600px] h-[600px] rounded-full bg-purple-800 opacity-20 blur-3xl animate-pulse"></div>
-      <div className="absolute top-1/4 right-0 w-[400px] h-[400px] bg-fuchsia-700 opacity-10 blur-2xl rotate-45"></div>
-
-      {/* Interactive Hive Background */}
+    <main className="min-h-screen bg-zinc-950 text-white relative overflow-hidden">
       <HiveHexGrid />
+      
+      <div className="relative z-10 max-w-6xl mx-auto px-6 py-16 flex flex-col lg:flex-row items-center justify-between gap-12">
+        {/* Left side - Hero content */}
+        <div className="flex-1">
+          <h1 className="text-5xl font-bold mb-6 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+            Activate Your Hive
+          </h1>
+          <p className="text-xl text-gray-300 mb-8">
+            The private founder network for curated intros, smart coffee chats, and in-person hives.
+          </p>
+          <ul className="space-y-4 text-lg text-gray-400 mb-8">
+            <li className="flex items-center">
+              <span className="mr-3 text-2xl">🧠</span>
+              Join curated groups of high-trust founders
+            </li>
+            <li className="flex items-center">
+              <span className="mr-3 text-2xl">☕</span>
+              Book meaningful coffee chats
+            </li>
+            <li className="flex items-center">
+              <span className="mr-3 text-2xl">🌎</span>
+              Meet up with aligned travelers, investors, and mentors
+            </li>
+          </ul>
+          <div className="mt-8">
+            <button 
+              onClick={() => setIsLogin(true)}
+              className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:from-purple-700 hover:to-pink-700 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-purple-500/25"
+            >
+              Connect with Network
+            </button>
+          </div>
+        </div>
 
-      {/* RIGHT SIDE — AUTH FORM */}
-      <div className="relative z-10 w-full lg:w-[420px]">
-        {isLogin ? <LoginFormComponent /> : <SignupFormComponent />}
+        {/* Right side - Auth forms */}
+        <div className="flex-1">
+          <div className="bg-zinc-900/70 backdrop-blur-sm p-8 rounded-2xl border border-zinc-800 shadow-xl">
+            <div className="text-center mb-8">
+              <h2 className="text-2xl font-bold mb-2">
+                {isLogin ? 'Welcome Back' : 'Join Network'}
+              </h2>
+              <p className="text-gray-400">
+                {isLogin ? 'Connect with your network' : 'Limited to first 250 founders'}
+              </p>
+            </div>
+
+            {isLogin ? (
+              <LoginFormComponent onToggleForm={() => setIsLogin(false)} />
+            ) : (
+              <SignupFormComponent onToggleForm={() => setIsLogin(true)} />
+            )}
+          </div>
+        </div>
       </div>
-    </div>
+    </main>
   )
 }

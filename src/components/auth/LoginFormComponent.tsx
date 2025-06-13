@@ -4,7 +4,11 @@ import { useRouter } from 'next/navigation'
 import { useApp } from '@/components/providers/AppProvider'
 import { supabase } from '@/lib/supabase'
 
-export default function LoginFormComponent() {
+interface LoginFormProps {
+  onToggleForm: () => void;
+}
+
+export default function LoginFormComponent({ onToggleForm }: LoginFormProps) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -76,28 +80,11 @@ export default function LoginFormComponent() {
         return
       }
 
-      const user = {
-        id: founderData.id,
-        name: founderData.full_name,
-        email: founderData.email,
-        status: founderData.is_active ? 'active' : 'pending' as 'active' | 'pending' | 'waitlisted' | 'suspended',
-        profile_progress: founderData.onboarding_completed ? 100 : 50,
-        is_ambassador: false,
-        created_at: founderData.created_at
-      }
-
-      setUser(user)
-      localStorage.setItem('network_user', JSON.stringify(user))
-
-      // Redirect based on user status and profile completion
-      if (user.status === 'suspended') {
-        setError('Your access has been paused by an admin. Please contact support.')
-        return
-      } else if (user.profile_progress < 100) {
-        router.push('/onboarding/profile')
-      } else if (user.status === 'active') {
-        router.push('/dashboard')
-      }
+      // The AppProvider will handle setting user state automatically
+      // when the auth state changes, no need to manually set fake user objects
+      
+      // Just redirect to dashboard, the AppProvider will handle the rest
+      router.push('/dashboard')
     } catch (error: any) {
       console.error('Login error:', error)
       if (error.message && error.message.includes('Failed to fetch')) {

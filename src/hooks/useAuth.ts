@@ -3,14 +3,10 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { User } from '@supabase/supabase-js'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '../lib/supabase'
+import type { Database } from '../../lib/database.types'
 
-interface AuthUser {
-  id: string
-  email: string
-  full_name?: string
-  onboarding_completed: boolean
-}
+type AuthUser = Database['public']['Tables']['founders']['Row']
 
 export function useAuth() {
   const [user, setUser] = useState<AuthUser | null>(null)
@@ -50,7 +46,7 @@ export function useAuth() {
       // Check if user exists in founders table
       const { data: founder, error } = await supabase
         .from('founders')
-        .select('id, email, full_name, onboarding_completed')
+        .select('*')
         .eq('id', authUser.id)
         .single()
 
@@ -68,6 +64,8 @@ export function useAuth() {
             id: authUser.id,
             email: authUser.email!,
             full_name: authUser.user_metadata?.full_name || '',
+            company_name: '', // Required field - will be filled during onboarding
+            role: '', // Required field - will be filled during onboarding
             onboarding_completed: false
           })
 
@@ -77,19 +75,22 @@ export function useAuth() {
           return
         }
 
-        setUser({
-          id: authUser.id,
-          email: authUser.email!,
-          full_name: authUser.user_metadata?.full_name || '',
-          onboarding_completed: false
-        })
+        // Fetch the newly created founder record
+        const { data: newFounder, error: fetchError } = await supabase
+          .from('founders')
+          .select('*')
+          .eq('id', authUser.id)
+          .single()
+
+        if (fetchError || !newFounder) {
+          console.error('Error fetching new founder:', fetchError)
+          setLoading(false)
+          return
+        }
+
+        setUser(newFounder)
       } else {
-        setUser({
-          id: founder.id,
-          email: founder.email,
-          full_name: founder.full_name || '',
-          onboarding_completed: founder.onboarding_completed
-        })
+        setUser(founder)
       }
     } catch (error) {
       console.error('Error in handleUser:', error)

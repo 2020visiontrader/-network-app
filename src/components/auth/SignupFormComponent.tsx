@@ -16,7 +16,11 @@ const HOBBIES = [
   'Adventure Sports', 'Nature', 'Volunteering', 'Music', 'Design', 'Podcasting'
 ]
 
-export default function SignupFormComponent() {
+interface SignupFormProps {
+  onToggleForm: () => void;
+}
+
+export default function SignupFormComponent({ onToggleForm }: SignupFormProps) {
   const [formData, setFormData] = useState({
     name: '',
     email: '',

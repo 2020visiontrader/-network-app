@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import type { Database } from '@/lib/database.types';
 
-type User = Database['public']['Tables']['users']['Row'];
+type Founder = Database['public']['Tables']['founders']['Row'];
 type CoffeeChat = Database['public']['Tables']['coffee_chats']['Row'];
 
 export default function CoffeeChatStatus() {
@@ -11,7 +11,7 @@ export default function CoffeeChatStatus() {
   const [city, setCity] = useState('');
   const [date, setDate] = useState('');
   const [isVisible, setIsVisible] = useState(true);
-  const [matches, setMatches] = useState<User[]>([]);
+  const [matches, setMatches] = useState<Founder[]>([]);
 
   useEffect(() => {
     const fetchStatus = async () => {
@@ -131,17 +131,22 @@ export default function CoffeeChatStatus() {
         <div className="mt-8">
           <h3 className="text-lg font-semibold mb-4">People in {city}</h3>
           <div className="space-y-4">
-            {matches.map(user => (
-              <div key={user.id} className="bg-white p-4 rounded-lg shadow">
-                <h3 className="text-lg font-semibold">{user.full_name}</h3>
-                {user.city && (
+            {matches.map(founder => (
+              <div key={founder.id} className="bg-white p-4 rounded-lg shadow">
+                <h3 className="text-lg font-semibold">{founder.full_name}</h3>
+                {founder.location_city && (
                   <p className="text-sm text-gray-500">
-                    Location: {user.city}
+                    Location: {founder.location_city}
                   </p>
                 )}
-                {user.niche_tags && user.niche_tags.length > 0 && (
+                {founder.industry && (
                   <p className="text-sm text-gray-400">
-                    Interests: {user.niche_tags.join(', ')}
+                    Industry: {founder.industry}
+                  </p>
+                )}
+                {founder.tagline && (
+                  <p className="text-sm text-gray-400">
+                    {founder.tagline}
                   </p>
                 )}
               </div>

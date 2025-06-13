@@ -1,20 +1,20 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
-import type { RealtimeChannel } from '@supabase/supabase-js'
+import type { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js'
 
 interface RealTimeUpdateOptions {
   table: string
   event?: 'INSERT' | 'UPDATE' | 'DELETE' | '*'
   filter?: string
-  onUpdate?: (payload: any) => void
+  onUpdate?: (payload: RealtimePostgresChangesPayload<any>) => void
   showToast?: boolean
 }
 
 interface ToastNotification {
   id: string
   message: string
-  type: 'info' | 'success' | 'warning' | 'error'
-  timestamp: number
+  type: 'info' | 'success' | 'error' | 'warning'
+  createdAt: number
 }
 
 export function useRealTimeUpdate({
@@ -27,104 +27,102 @@ export function useRealTimeUpdate({
   const [isConnected, setIsConnected] = useState(false)
   const [notifications, setNotifications] = useState<ToastNotification[]>([])
   const [channel, setChannel] = useState<RealtimeChannel | null>(null)
+  const reconnectAttempts = useRef(0)
+  const maxAttempts = 5
 
   const addNotification = useCallback((message: string, type: ToastNotification['type'] = 'info') => {
-    const notification: ToastNotification = {
-      id: `${Date.now()}-${Math.random()}`,
-      message,
-      type,
-      timestamp: Date.now()
-    }
-
-    setNotifications(prev => [...prev, notification])
-
-    // Auto-remove after 5 seconds
-    setTimeout(() => {
-      setNotifications(prev => prev.filter(n => n.id !== notification.id))
-    }, 5000)
+    const id = `${Date.now()}-${Math.random()}`
+    setNotifications(prev => [...prev, { id, message, type, createdAt: Date.now() }])
   }, [])
 
   const removeNotification = useCallback((id: string) => {
     setNotifications(prev => prev.filter(n => n.id !== id))
   }, [])
 
-  const getEventMessage = useCallback((tableName: string, eventType: string, payload: any) => {
-    const tableDisplayNames: Record<string, string> = {
-      coffee_chats: 'Coffee Chat',
-      events: 'Event',
-      connections: 'Connection',
-      masterminds: 'Mastermind',
-      announcements: 'Announcement',
-      usage_metrics: 'Activity'
-    }
-
-    const displayName = tableDisplayNames[tableName] || tableName
-
-    switch (eventType) {
-      case 'INSERT':
-        return `New ${displayName} added — click to refresh`
-      case 'UPDATE':
-        return `${displayName} updated — click to refresh`
-      case 'DELETE':
-        return `${displayName} removed — click to refresh`
+  const getEventMessage = useCallback((table: string, eventType: string, payload: any) => {
+    switch (table) {
+      case 'coffee_chats':
+        return `Coffee chat ${eventType.toLowerCase()}ed`
+      case 'connections':
+        return `Connection ${eventType.toLowerCase()}ed`
       default:
-        return `${displayName} changed — click to refresh`
+        return `${table} ${eventType.toLowerCase()}ed`
     }
   }, [])
 
-  useEffect(() => {
-    if (!table) return
+  const setupSubscription = useCallback(() => {
+    if (channel) {
+      supabase.removeChannel(channel)
+    }
 
-    // Create channel name
-    const channelName = `realtime:${table}${filter ? `:${filter}` : ''}`
+    const channelName = `realtime:${table}:v1${filter ? `:${filter}` : ''}`
 
-    // Create subscription
     const subscription = supabase
       .channel(channelName)
       .on(
         'postgres_changes' as any,
-        {
-          event,
+        { 
+          event: event as any,
           schema: 'public',
           table,
-          filter
-        } as any,
-        (payload: any) => {
-          console.log('Real-time update received:', payload)
+          ...(filter ? { filter } : {})
+        },
+        (payload: RealtimePostgresChangesPayload<any>) => {
+          console.log('Realtime update received:', { channel: channelName, payload })
 
-          // Call custom handler if provided
           if (onUpdate) {
             onUpdate(payload)
           }
 
-          // Show toast notification
           if (showToast) {
             const message = getEventMessage(table, payload.eventType || 'UPDATE', payload)
             addNotification(message, 'info')
           }
         }
       )
-      .subscribe((status: any) => {
-        console.log('Subscription status:', status)
-        setIsConnected(status === 'SUBSCRIBED')
+      .subscribe((status) => {
+        console.log('Subscription status:', { channel: channelName, status })
+        
+        if (status === 'SUBSCRIBED') {
+          setIsConnected(true)
+          reconnectAttempts.current = 0
+        } else {
+          setIsConnected(false)
+          
+          // Handle reconnection for non-intentional disconnects
+          if (status === 'TIMED_OUT' || status === 'CHANNEL_ERROR') {
+            if (reconnectAttempts.current < maxAttempts) {
+              const attempt = reconnectAttempts.current + 1
+              reconnectAttempts.current = attempt
+              const delay = Math.min(1000 * Math.exp(attempt), 30000)
+              console.log(`Attempting to reconnect in ${delay}ms (attempt ${attempt})`)
+              setTimeout(setupSubscription, delay)
+            } else {
+              console.error('Max reconnection attempts reached')
+              addNotification('Lost connection to real-time updates', 'error')
+            }
+          }
+        }
       })
 
     setChannel(subscription)
+  }, [table, event, filter, onUpdate, showToast, getEventMessage, addNotification, channel, maxAttempts])
 
-    // Cleanup on unmount
+  useEffect(() => {
+    setupSubscription()
+
     return () => {
-      if (subscription) {
-        supabase.removeChannel(subscription)
+      if (channel) {
+        console.log('Cleaning up realtime subscription')
+        supabase.removeChannel(channel)
       }
     }
-  }, [table, event, filter, onUpdate, showToast, getEventMessage, addNotification])
+  }, [channel, setupSubscription])
 
-  // Manual refresh function
   const refresh = useCallback(() => {
-    if (typeof window !== 'undefined') {
-      window.location.reload()
-    }
-  }, [])
+    console.log('Manual refresh requested')
+    setupSubscription()
+  }, [setupSubscription])
 
   return {
     isConnected,
@@ -136,108 +134,88 @@ export function useRealTimeUpdate({
 }
 
 // Specialized hooks for common use cases
-export function useCoffeeChatUpdates(onUpdate?: (payload: any) => void) {
+export function useCoffeeChatUpdates(onUpdate?: (payload: RealtimePostgresChangesPayload<any>) => void) {
   return useRealTimeUpdate({
     table: 'coffee_chats',
-    onUpdate,
-    showToast: true
+    onUpdate
   })
 }
 
-export function useEventUpdates(onUpdate?: (payload: any) => void) {
+export function useEventUpdates(onUpdate?: (payload: RealtimePostgresChangesPayload<any>) => void) {
   return useRealTimeUpdate({
     table: 'events',
-    onUpdate,
-    showToast: true
+    onUpdate
   })
 }
 
-export function useConnectionUpdates(userId?: string, onUpdate?: (payload: any) => void) {
+export function useConnectionUpdates(userId?: string, onUpdate?: (payload: RealtimePostgresChangesPayload<any>) => void) {
   return useRealTimeUpdate({
     table: 'connections',
     filter: userId ? `initiator_id=eq.${userId},receiver_id=eq.${userId}` : undefined,
-    onUpdate,
-    showToast: true
+    onUpdate
   })
 }
 
-export function useMastermindUpdates(onUpdate?: (payload: any) => void) {
+export function useMastermindUpdates(onUpdate?: (payload: RealtimePostgresChangesPayload<any>) => void) {
   return useRealTimeUpdate({
     table: 'masterminds',
-    onUpdate,
-    showToast: true
+    onUpdate
   })
 }
 
-export function useAnnouncementUpdates(onUpdate?: (payload: any) => void) {
+export function useAnnouncementUpdates(onUpdate?: (payload: RealtimePostgresChangesPayload<any>) => void) {
   return useRealTimeUpdate({
     table: 'announcements',
-    event: 'INSERT',
-    onUpdate,
-    showToast: true
+    onUpdate
   })
 }
 
-// Toast notification component hook
-export function useToastNotifications() {
-  const [toasts, setToasts] = useState<ToastNotification[]>([])
-
-  const addToast = useCallback((message: string, type: ToastNotification['type'] = 'info') => {
-    const toast: ToastNotification = {
-      id: `${Date.now()}-${Math.random()}`,
-      message,
-      type,
-      timestamp: Date.now()
-    }
-
-    setToasts(prev => [...prev, toast])
-
-    // Auto-remove after 5 seconds
-    setTimeout(() => {
-      setToasts(prev => prev.filter(t => t.id !== toast.id))
-    }, 5000)
-  }, [])
-
-  const removeToast = useCallback((id: string) => {
-    setToasts(prev => prev.filter(t => t.id !== id))
-  }, [])
-
-  const clearAllToasts = useCallback(() => {
-    setToasts([])
-  }, [])
-
-  return {
-    toasts,
-    addToast,
-    removeToast,
-    clearAllToasts
-  }
-}
-
-// Connection status hook
+// Enhanced connection status hook
 export function useSupabaseConnection() {
   const [isConnected, setIsConnected] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const reconnectAttempts = useRef(0)
+  const maxAttempts = 5
 
   useEffect(() => {
+    let mounted = true
+    const checkInterval = 30000 // 30 seconds
+
     const checkConnection = async () => {
       try {
-        const { error } = await supabase.from('users').select('count').limit(1)
-        setIsConnected(!error)
+        const { error } = await supabase.from('founders').select('count').limit(1)
+        if (mounted) {
+          setIsConnected(!error)
+          if (!error) {
+            reconnectAttempts.current = 0
+          }
+        }
       } catch (error) {
         console.error('Connection check failed:', error)
-        setIsConnected(false)
+        if (mounted) {
+          setIsConnected(false)
+          
+          if (reconnectAttempts.current < maxAttempts) {
+            const attempt = reconnectAttempts.current + 1
+            reconnectAttempts.current = attempt
+            const delay = Math.min(1000 * Math.exp(attempt), checkInterval)
+            setTimeout(checkConnection, delay)
+          }
+        }
       } finally {
-        setIsLoading(false)
+        if (mounted) {
+          setIsLoading(false)
+        }
       }
     }
 
     checkConnection()
+    const interval = setInterval(checkConnection, checkInterval)
 
-    // Check connection every 30 seconds
-    const interval = setInterval(checkConnection, 30000)
-
-    return () => clearInterval(interval)
+    return () => {
+      mounted = false
+      clearInterval(interval)
+    }
   }, [])
 
   return { isConnected, isLoading }

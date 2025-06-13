@@ -1,10 +1,10 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createClient } from '@/lib/supabase';
 
 const NavBar = () => {
   const pathname = usePathname();
-  const supabase = createClientComponentClient();
+  const supabase = createClient();
 
   const navItems = [
     { href: '/dashboard', label: 'Hub', icon: '⬢' },

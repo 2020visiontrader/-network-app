@@ -56,18 +56,18 @@ export default function WelcomeCard({ user }: WelcomeCardProps) {
 
       // Get total connections (other users)
       const { count: connectionsCount } = await supabase
-        .from('users')
+        .from('founders')
         .select('*', { count: 'exact', head: true })
         .neq('id', user.id)
         .eq('status', 'active')
 
       // Get unique cities from all users (network reach)
       const { data: citiesData } = await supabase
-        .from('users')
-        .select('city')
-        .not('city', 'is', null)
+        .from('founders')
+        .select('location_city')
+        .not('location_city', 'is', null)
 
-      const uniqueCities = new Set(citiesData?.map(u => u.city).filter(Boolean))
+      const uniqueCities = new Set(citiesData?.map(u => u.location_city).filter(Boolean))
 
       // Get user's meetings count
       const { count: meetingsCount } = await supabase

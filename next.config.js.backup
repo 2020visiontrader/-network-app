@@ -1,0 +1,52 @@
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  reactStrictMode: true,
+  distDir: 'build',
+  images: {
+    domains: ['localhost']
+  },
+  // Properly handle environment variables in static export
+  env: {
+    NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+  },
+  // Use SWC compiler
+  swcMinify: true,
+  // Experimental features for better performance
+  experimental: {
+    optimizeCss: true,
+    optimizePackageImports: ['@supabase/supabase-js']
+  },
+  // Webpack configuration for better module resolution
+  webpack: (config, { dev, isServer }) => {
+    // Handle ESM modules
+    config.resolve.fallback = { fs: false, net: false, tls: false };
+    
+    if (!dev && !isServer) {
+      Object.assign(config.resolve.alias, {
+        'react/jsx-runtime.js': 'preact/compat/jsx-runtime',
+        react: 'preact/compat',
+        'react-dom/test-utils': 'preact/test-utils',
+        'react-dom': 'preact/compat',
+      });
+    }
+    
+    return config;
+  },
+  // Headers for proper MIME types
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          {
+            key: 'Content-Type',
+            value: 'application/javascript; charset=utf-8',
+          },
+        ],
+      },
+    ];
+  },
+}
+
+module.exports = nextConfig

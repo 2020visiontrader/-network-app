@@ -1,9 +1,11 @@
 import { NextResponse } from 'next/server';
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
+import { createServerSupabaseClient } from '../../../../src/utils/supabase-server';
 
-export async function GET() {
-  const supabase = createRouteHandlerClient({ cookies });
+// Configure dynamic route handling for production export
+export const dynamic = 'force-dynamic';
+
+export async function GET(request: Request) {
+  const supabase = createServerSupabaseClient();
 
   try {
     const { data: { user } } = await supabase.auth.getUser();
@@ -33,7 +35,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const supabase = createRouteHandlerClient({ cookies });
+  const supabase = createServerSupabaseClient();
 
   try {
     const { data: { user } } = await supabase.auth.getUser();
@@ -66,7 +68,7 @@ export async function POST(request: Request) {
 }
 
 export async function PUT(request: Request) {
-  const supabase = createRouteHandlerClient({ cookies });
+  const supabase = createServerSupabaseClient();
 
   try {
     const { data: { user } } = await supabase.auth.getUser();
@@ -91,4 +93,4 @@ export async function PUT(request: Request) {
     console.error('Error updating coffee chat:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
-} 
+}

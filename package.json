@@ -4,24 +4,43 @@
   "description": "Mobile networking platform for 250 startup founders (free tier)",
   "scripts": {
     "dev": "next dev",
-    "build": "npm run clean && next build",
+    "build": "next build && npm run copy-files",
     "start": "next start",
-    "clean": "rm -rf .next out",
-    "copy-files": "mkdir -p out && cp -r public/* out/",
-    "build:netlify": "npm run clean && next build && npm run copy-files",
+    "clean": "rm -rf .next build",
+    "copy-files": "cp -r public/* build/",
+    "build:netlify": "npm run clean && next build",
     "start:netlify": "netlify dev",
     "lint": "next lint"
   },
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
     "@netlify/plugin-nextjs": "^4.41.0",
-    "next": "^13.4.7",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "@supabase/supabase-js": "^2.26.0"
+    "@next/font": "^14.0.0",
+    "@supabase/ssr": "^0.0.10",
+    "@supabase/supabase-js": "^2.39.3",
+    "critters": "^0.0.20",
+    "encoding": "^0.1.13",
+    "next": "14.0.4",
+    "react": "18.2.0",
+    "react-dom": "18.2.0"
   },
   "devDependencies": {
+    "@babel/core": "^7.27.4",
+    "@babel/preset-env": "^7.27.2",
+    "@babel/preset-react": "^7.27.1",
+    "@babel/preset-typescript": "^7.27.1",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.3.0",
+    "@types/jest": "^29.5.14",
     "@types/node": "^20.3.1",
     "@types/react": "^18.2.12",
+    "autoprefixer": "^10.4.14",
+    "jest": "^30.0.0",
+    "jest-environment-jsdom": "^30.0.0",
+    "postcss": "^8.4.23",
+    "tailwindcss": "^3.3.0",
+    "ts-jest": "^29.4.0",
     "typescript": "^5.1.3"
   }
 }

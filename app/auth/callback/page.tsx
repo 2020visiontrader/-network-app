@@ -1,110 +1,69 @@
-'use client'
+'use client';
 
-import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { createBrowserClient } from '@supabase/ssr';
+import type { Database } from '../../../lib/database.types';
 
-export default function AuthCallbackPage() {
-  const router = useRouter()
+export default function AuthCallback() {
+  const router = useRouter();
+  const supabase = createBrowserClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
 
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
-        // Handle the auth callback
-        const { data, error } = await supabase.auth.getSession()
-
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
         if (error) {
-          console.error('Auth callback error:', error)
-          router.push('/login?error=callback_failed')
-          return
+          console.error('Auth error:', error);
+          router.push('/login?error=auth_failed');
+          return;
         }
 
-        if (!data.session?.user) {
-          console.error('No user session found')
-          router.push('/login?error=no_session')
-          return
-        }
-
-        const user = data.session.user
-
-        // Check if user exists in founders table
-        const { data: founder, error: founderError } = await supabase
-          .from('founders')
-          .select('onboarding_completed, member_number')
-          .eq('id', user.id)
-          .single()
-
-        if (founderError && founderError.code !== 'PGRST116') {
-          console.error('Error checking founder:', founderError)
-          router.push('/login?error=database_error')
-          return
-        }
-
-        if (founder) {
-          // EXISTING FOUNDER - redirect based on onboarding status
-          console.log(`Existing founder #${founder.member_number} signing in`)
-          if (founder.onboarding_completed) {
-            router.push('/dashboard')
-          } else {
-            router.push('/onboarding')
-          }
-          return
-        }
-
-        // FIRST-TIME USER - check if we can accept new founders (250 cap)
-        console.log('First-time user detected, checking capacity...')
-
-        try {
-          // Create new founder record (triggers will handle limit checking and member number assignment)
-          const { data: newFounder, error: insertError } = await supabase
+        if (session?.user) {
+          // Check if user exists in founders table
+          const { data: founder } = await supabase
             .from('founders')
-            .insert({
-              id: user.id,
-              email: user.email!,
-              full_name: user.user_metadata?.full_name || 'New Founder',
-              profile_photo_url: user.user_metadata?.avatar_url || '',
-              onboarding_completed: false
-            })
-            .select('member_number')
-            .single()
+            .select('id, onboarding_completed')
+            .eq('id', session.user.id)
+            .single();
 
-          if (insertError) {
-            // Check if it's the 250 limit error
-            if (insertError.message.includes('Founder limit reached')) {
-              console.log('Founder limit reached, redirecting to closed page')
-              router.push('/closed')
-              return
+          if (founder) {
+            if (founder.onboarding_completed) {
+              router.push('/dashboard');
+            } else {
+              router.push('/onboarding');
             }
-
-            console.error('Error creating founder:', insertError)
-            router.push('/login?error=creation_failed')
-            return
+          } else {
+            // New user needs to complete onboarding
+            router.push('/onboarding');
           }
-
-          console.log(`New founder created with member number: ${newFounder?.member_number}`)
-          // Redirect to onboarding for new founder
-          router.push('/onboarding')
-
-        } catch (error) {
-          console.error('Error in founder creation:', error)
-          router.push('/login?error=unexpected')
+        } else {
+          router.push('/login');
         }
       } catch (error) {
-        console.error('Callback error:', error)
-        router.push('/login?error=unexpected')
+        console.error('Unexpected error in auth callback:', error);
+        router.push('/login?error=unexpected');
       }
-    }
+    };
 
-    handleAuthCallback()
-  }, [router])
+    handleAuthCallback();
+  }, [router, supabase]);
 
   return (
-    <div className="min-h-screen bg-black text-white flex items-center justify-center">
-      <div className="text-center">
-        <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-        <p className="text-lg font-semibold">Finalizing authentication...</p>
-        <p className="text-gray-400 text-sm mt-2">Please wait while we set up your account</p>
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="max-w-md w-full space-y-8 text-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-600 mx-auto"></div>
+        <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
+          Authenticating...
+        </h2>
+        <p className="mt-2 text-sm text-gray-600">
+          Please wait while we complete your sign in.
+        </p>
       </div>
     </div>
-  )
+  );
 }

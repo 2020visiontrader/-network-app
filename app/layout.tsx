@@ -2,10 +2,11 @@ import './globals.css'
 import { Inter } from 'next/font/google'
 import type { Metadata } from 'next'
 import AppProvider from '@/components/providers/AppProvider'
+import ErrorBoundary from '@/components/ErrorBoundary'
 
 const inter = Inter({ subsets: ['latin'] })
 
-export const metadata: Metadata = {
+export const metadata = {
   title: {
     default: 'Network – Relationship OS',
     template: '%s | Network'
@@ -20,14 +21,9 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
-  // Removed metadataBase URL referencing Vercel
-  alternates: {
-    canonical: '/',
-  },
   openGraph: {
     title: 'Network – Relationship OS',
     description: 'Build and manage your network with intention. Track relationships, plan meetups, and reconnect meaningfully.',
-    // Removed openGraph.url referencing Vercel
     siteName: 'Network',
     images: [
       {
@@ -56,27 +52,10 @@ export const metadata: Metadata = {
       { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
     ],
   },
-  manifest: '/manifest.json',
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      'max-video-preview': -1,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
-    },
-  },
-}
-
-export const viewport = {
-  width: 'device-width',
-  initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
-  viewportFit: 'cover',
-}
+  other: {
+    'permissions-policy': 'clipboard-write=(self)'
+  }
+} as const
 
 export default function RootLayout({
   children,
@@ -84,23 +63,11 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={inter.className} suppressHydrationWarning>
-        <AppProvider>
+    <html lang="en">
+      <body className={inter.className}>
+        <ErrorBoundary>
           {children}
-        </AppProvider>
-
-        {/* Add error monitoring */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              window.onerror = function(msg, url, lineNo, columnNo, error) {
-                console.error('Client Error:', { msg, url, lineNo, columnNo, error });
-                return false;
-              };
-            `
-          }}
-        />
+        </ErrorBoundary>
       </body>
     </html>
   )

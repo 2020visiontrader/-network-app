@@ -1,9 +1,11 @@
 import { NextResponse } from 'next/server';
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
+import { createServerSupabaseClient } from '../../../../src/utils/supabase-server';
+
+// Configure dynamic route handling for production export
+export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
-  const supabase = createRouteHandlerClient({ cookies });
+  const supabase = createServerSupabaseClient();
   const { searchParams } = new URL(request.url);
   const city = searchParams.get('city');
 
@@ -17,28 +19,29 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Get all founders in the same city who are available for coffee chats
     const { data, error } = await supabase
-      .from('coffee_chats')
-      .select('*, user:users(*)')
-      .eq('city', city)
-      .eq('public_visibility', true)
-      .neq('user_id', user.id)
-      .gte('date_available', new Date().toISOString());
+      .from('founders')
+      .select(`
+        id,
+        full_name,
+        location_city,
+        industry,
+        tagline,
+        profile_picture
+      `)
+      .eq('location_city', city)
+      .neq('id', user.id) // Exclude current user
+      .is('deleted_at', null); // Only active founders
 
-    if (error) throw error;
+    if (error) {
+      console.error('Error fetching matches:', error);
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    }
 
-    // Filter out sensitive user data
-    const matches = data.map(match => ({
-      id: match.user.id,
-      full_name: match.user.full_name,
-      preferred_name: match.user.preferred_name,
-      interests: match.user.niche_tags,
-      date_available: match.date_available
-    }));
-
-    return NextResponse.json(matches);
+    return NextResponse.json(data);
   } catch (error) {
-    console.error('Error fetching coffee chat matches:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    console.error('Error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-} 
+}

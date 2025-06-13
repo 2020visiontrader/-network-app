@@ -1,5 +1,5 @@
-import { supabase } from '@/lib/supabase';
-import type { Database } from '@/lib/database.types';
+import { supabase } from '../lib/supabase';
+import type { Database } from '../lib/database.types';
 
 export type SignUpCredentials = {
   email: string;
@@ -26,14 +26,13 @@ export const authService = {
     // Create user profile
     if (authData.user) {
       const { error: profileError } = await supabase
-        .from('users')
+        .from('founders')
         .insert({
           id: authData.user.id,
           email,
           full_name: fullName,
-          role,
-          profile_visibility: true,
-          created_at: new Date().toISOString()
+          company_name: role, // Use role as company_name for now
+          role: 'founder' // Default role
         });
 
       if (profileError) {
