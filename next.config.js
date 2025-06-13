@@ -4,8 +4,7 @@ const nextConfig = {
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   },
-  // Use standalone for Netlify with dynamic features
-  output: 'standalone',
+  // Let @netlify/plugin-nextjs handle the build output
   experimental: {
     forceSwcTransforms: true,
   },
