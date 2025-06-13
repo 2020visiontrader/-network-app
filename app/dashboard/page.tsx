@@ -1,21 +1,35 @@
 'use client';
 
-import AppProvider, { useApp } from '@/components/providers/AppProvider';
+import AppProvider, { useApp } from '../../src/components/providers/AppProvider';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 // Prevent static generation
 export const dynamic = 'force-dynamic';
 
 function DashboardContent() {
+  const [mounted, setMounted] = useState(false);
   const { user, isLoading } = useApp();
   const router = useRouter();
 
   useEffect(() => {
-    if (!isLoading && !user) {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (mounted && !isLoading && !user) {
       router.push('/login');
     }
-  }, [user, isLoading, router]);
+  }, [user, isLoading, router, mounted]);
+
+  // Don't render anything until mounted to avoid hydration issues
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (

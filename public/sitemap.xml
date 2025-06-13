@@ -1,55 +1,55 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://network-app.vercel.app/</loc>
+    <loc>https://networkapp.netlify.app/</loc>
     <lastmod>2024-01-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://network-app.vercel.app/login</loc>
+    <loc>https://networkapp.netlify.app/login</loc>
     <lastmod>2024-01-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://network-app.vercel.app/signup</loc>
+    <loc>https://networkapp.netlify.app/signup</loc>
     <lastmod>2024-01-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://network-app.vercel.app/dashboard</loc>
+    <loc>https://networkapp.netlify.app/dashboard</loc>
     <lastmod>2024-01-01</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://network-app.vercel.app/contacts</loc>
+    <loc>https://networkapp.netlify.app/contacts</loc>
     <lastmod>2024-01-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://network-app.vercel.app/introductions</loc>
+    <loc>https://networkapp.netlify.app/introductions</loc>
     <lastmod>2024-01-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://network-app.vercel.app/coffee-chats</loc>
+    <loc>https://networkapp.netlify.app/coffee-chats</loc>
     <lastmod>2024-01-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://network-app.vercel.app/travel</loc>
+    <loc>https://networkapp.netlify.app/travel</loc>
     <lastmod>2024-01-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://network-app.vercel.app/birthdays</loc>
+    <loc>https://networkapp.netlify.app/birthdays</loc>
     <lastmod>2024-01-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>

@@ -14,4 +14,4 @@ Disallow: /api/
 Disallow: /auth/
 
 # Sitemap
-Sitemap: https://network-app.vercel.app/sitemap.xml
+Sitemap: https://networkapp.netlify.app/sitemap.xml

@@ -19,14 +19,14 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
-  metadataBase: new URL('https://network-app.vercel.app'),
+  metadataBase: new URL('https://networkapp.netlify.app'),
   alternates: {
     canonical: '/',
   },
   openGraph: {
     title: 'Network – Relationship OS',
     description: 'Build and manage your network with intention. Track relationships, plan meetups, and reconnect meaningfully.',
-    url: 'https://network-app.vercel.app',
+    url: 'https://networkapp.netlify.app',
     siteName: 'Network',
     images: [
       {

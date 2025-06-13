@@ -66,7 +66,9 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <ErrorBoundary>
-          {children}
+          <AppProvider>
+            {children}
+          </AppProvider>
         </ErrorBoundary>
       </body>
     </html>
