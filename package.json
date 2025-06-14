@@ -15,7 +15,6 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
-    "@netlify/plugin-nextjs": "^5.11.2",
     "@next/font": "^14.0.0",
     "@supabase/ssr": "^0.0.10",
     "@supabase/supabase-js": "^2.39.3",

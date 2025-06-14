@@ -4,7 +4,13 @@ const nextConfig = {
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   },
-  // Let @netlify/plugin-nextjs handle the build output
+  // Static export for pages, dynamic via Netlify Functions for API
+  output: 'export',
+  trailingSlash: true,
+  skipTrailingSlashRedirect: true,
+  images: {
+    unoptimized: true,
+  },
   experimental: {
     forceSwcTransforms: true,
   },

@@ -1,12 +1,11 @@
-# Netlify redirects for Next.js App Router
-# Handle Next.js static assets
-/_next/*  /_next/:splat  200
+# Netlify redirects for Next.js with @netlify/plugin-nextjs
+# The plugin handles most routing automatically
 
-# Handle static files
-/static/*  /static/:splat  200
+# Preserve Next.js static assets
+/_next/static/* /_next/static/:splat 200
 
-# Handle API routes
-/api/*  /.netlify/functions/:splat  200
+# Handle API routes (plugin manages these)
+/api/* /.netlify/functions/__nextjs_handler 200
 
-# Handle all routes for SPA
-/*  /index.html  200
+# Fallback for client-side routing (handled by plugin)
+/* /index.html 200
