@@ -67,7 +67,7 @@ export default function WelcomeCard({ user }: WelcomeCardProps) {
         .select('location_city')
         .not('location_city', 'is', null)
 
-      const uniqueCities = new Set(citiesData?.map(u => u.location_city).filter(Boolean))
+      const uniqueCities = new Set(citiesData?.map((u: any) => u.location_city).filter(Boolean))
 
       // Get user's meetings count
       const { count: meetingsCount } = await supabase

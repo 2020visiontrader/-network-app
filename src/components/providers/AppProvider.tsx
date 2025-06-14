@@ -42,7 +42,7 @@ export default function AppProvider({ children }: AppProviderProps) {
 
   // Handle auth state changes after mount
   useEffect(() => {
-    if (!hasMounted) return
+    if (!hasMounted || typeof window === 'undefined') return
 
     const supabase = createBrowserClient<Database>(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -183,7 +183,8 @@ export default function AppProvider({ children }: AppProviderProps) {
   }
 
   // Prevent hydration mismatch by showing loading state until mounted
-  if (!hasMounted) {
+  // But allow static export to render content
+  if (!hasMounted && typeof window !== 'undefined') {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div>

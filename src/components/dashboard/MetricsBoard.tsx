@@ -65,7 +65,7 @@ export default function MetricsBoard() {
         .select('location_city')
         .not('location_city', 'is', null)
 
-      const uniqueCities = new Set(citiesData?.map(u => u.location_city).filter(Boolean))
+      const uniqueCities = new Set(citiesData?.map((u: any) => u.location_city).filter(Boolean))
       const citiesReached = uniqueCities.size
 
       // Get industry breakdown
@@ -75,7 +75,7 @@ export default function MetricsBoard() {
         .not('industry', 'is', null)
 
       const industryCount: { [key: string]: number } = {}
-      usersData?.forEach(user => {
+      usersData?.forEach((user: any) => {
         if (user.industry) {
           industryCount[user.industry] = (industryCount[user.industry] || 0) + 1
         }

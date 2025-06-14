@@ -80,7 +80,7 @@ export function useRealTimeUpdate({
           }
         }
       )
-      .subscribe((status) => {
+      .subscribe((status: any) => {
         console.log('Subscription status:', { channel: channelName, status })
         
         if (status === 'SUBSCRIBED') {

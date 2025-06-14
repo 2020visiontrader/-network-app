@@ -85,7 +85,7 @@ export const authService = {
 
   // Subscribe to auth state changes
   onAuthStateChange: (callback: (event: 'SIGNED_IN' | 'SIGNED_OUT', session: any) => void) => {
-    return supabase.auth.onAuthStateChange((event, session) => {
+    return supabase.auth.onAuthStateChange((event: any, session: any) => {
       callback(event as 'SIGNED_IN' | 'SIGNED_OUT', session);
     });
   }

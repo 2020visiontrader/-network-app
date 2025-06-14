@@ -1,53 +1,8 @@
-'use client'
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
+import dynamic from 'next/dynamic'
 import HiveHexGrid from '@/components/HiveHexGrid'
-import LoginFormComponent from '@/components/auth/LoginFormComponent'
-import SignupFormComponent from '@/components/auth/SignupFormComponent'
-import { supabase } from '@/lib/supabase'
 
-export default function Home() {
-  const [isLogin, setIsLogin] = useState(true)
-  const [mounted, setMounted] = useState(false)
-  const [loading, setLoading] = useState(true)
-  const router = useRouter()
-
-  useEffect(() => {
-    setMounted(true)
-    
-    async function checkSession() {
-      try {
-        const { data: { session } } = await supabase.auth.getSession()
-        if (session) {
-          // Check if user exists in founders table
-          const { data: founder } = await supabase
-            .from('founders')
-            .select('onboarding_completed')
-            .eq('id', session.user.id)
-            .single()
-
-          if (founder?.onboarding_completed) {
-            router.push('/dashboard')
-          } else {
-            router.push('/onboarding/verify')
-          }
-        }
-      } catch (error) {
-        console.error('Session check error:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-    
-    checkSession()
-  }, [router])
-
-  // Prevent hydration issues
-  if (!mounted || loading) {
-    return null
-  }
-
+// Create a simple static component for SSR (no interactive components)
+function StaticHomePage() {
   return (
     <main className="min-h-screen bg-zinc-950 text-white relative overflow-hidden">
       <HiveHexGrid />
@@ -75,36 +30,60 @@ export default function Home() {
               Meet up with aligned travelers, investors, and mentors
             </li>
           </ul>
-          <div className="mt-8">
-            <button 
-              onClick={() => setIsLogin(true)}
-              className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:from-purple-700 hover:to-pink-700 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-purple-500/25"
-            >
-              Connect with Network
-            </button>
-          </div>
         </div>
 
-        {/* Right side - Auth forms */}
+        {/* Right side - Static auth form placeholder */}
         <div className="flex-1">
           <div className="bg-zinc-900/70 backdrop-blur-sm p-8 rounded-2xl border border-zinc-800 shadow-xl">
             <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold mb-2">
-                {isLogin ? 'Welcome Back' : 'Join Network'}
-              </h2>
-              <p className="text-gray-400">
-                {isLogin ? 'Connect with your network' : 'Limited to first 250 founders'}
-              </p>
+              <h2 className="text-2xl font-bold mb-2">Welcome Back</h2>
+              <p className="text-gray-400">Connect with your network</p>
             </div>
-
-            {isLogin ? (
-              <LoginFormComponent onToggleForm={() => setIsLogin(false)} />
-            ) : (
-              <SignupFormComponent onToggleForm={() => setIsLogin(true)} />
-            )}
+            
+            {/* Static form for SSR */}
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-gray-500"
+                  placeholder="Enter your email"
+                  disabled
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Password
+                </label>
+                <input
+                  type="password"
+                  className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-gray-500"
+                  placeholder="Enter your password"
+                  disabled
+                />
+              </div>
+              <button
+                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-lg font-semibold opacity-50 cursor-not-allowed"
+                disabled
+              >
+                Loading...
+              </button>
+            </div>
           </div>
         </div>
       </div>
     </main>
   )
+}
+
+// Dynamic import for client-side functionality
+const DynamicHomePage = dynamic(() => import('./HomePageClient'), {
+  ssr: false,
+  loading: () => <StaticHomePage />
+})
+
+export default function Home() {
+  return <DynamicHomePage />
 }

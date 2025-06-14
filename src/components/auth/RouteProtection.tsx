@@ -93,10 +93,11 @@ export default function RouteProtection({ children, user, isLoading = false }: R
   }, [pathname, user, mounted, router, isLoading, isRedirecting])
 
   // Don't render anything during initial mount to prevent hydration issues
-  if (!mounted) return null
+  // But allow static rendering
+  if (!mounted && typeof window !== 'undefined') return null
 
-  // Show loading state
-  if (isLoading) {
+  // Show loading state only in browser
+  if (isLoading && typeof window !== 'undefined') {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
         <div className="text-center">
