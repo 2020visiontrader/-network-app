@@ -1,0 +1,7 @@
+
+
+=== EXPO LOGS STARTED AT 2025-06-18T09:34:36.970Z ===
+
+Invalid project root: /Users/BrandonChi/Desktop/NETWORK APP/NetworkFounderApp/logs
+
+=== EXPO LOGS ENDED AT 2025-06-18T09:34:42.144Z WITH CODE 1 ===

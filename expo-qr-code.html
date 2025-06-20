@@ -1,0 +1,62 @@
+
+  <!DOCTYPE html>
+  <html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expo QR Code</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+        text-align: center;
+      }
+      h1 {
+        color: #2d3748;
+      }
+      .qr-container {
+        margin: 30px auto;
+      }
+      .url {
+        margin-top: 20px;
+        padding: 10px;
+        background-color: #f7fafc;
+        border-radius: 5px;
+        font-family: monospace;
+        word-break: break-all;
+      }
+      .instructions {
+        margin-top: 30px;
+        text-align: left;
+        background-color: #f7fafc;
+        padding: 15px;
+        border-radius: 5px;
+      }
+      .instructions li {
+        margin-bottom: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Expo QR Code for Network App</h1>
+    <div class="qr-container">
+      <img src="data:image/png;base64,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" alt="Expo QR Code" width="300">
+    </div>
+    <div class="url">
+      <strong>URL:</strong> exp://192.168.0.125:8081
+    </div>
+    <div class="instructions">
+      <h3>How to use:</h3>
+      <ol>
+        <li>Open the <strong>Expo Go</strong> app on your device</li>
+        <li>Tap on <strong>"Scan QR Code"</strong></li>
+        <li>Scan this QR code with your device's camera</li>
+        <li>The app should load on your device</li>
+      </ol>
+      <p><strong>Note:</strong> Make sure your device is on the same WiFi network as this computer.</p>
+    </div>
+  </body>
+  </html>
+  
