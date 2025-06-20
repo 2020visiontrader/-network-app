@@ -34,3 +34,12 @@ yarn-error.*
 
 # typescript
 *.tsbuildinfo
+
+# Config files with sensitive info
+GOOGLE_OAUTH_FINAL_CONFIG.md
+CONFIGURE_GOOGLE_OAUTH.md
+COMPLETE_FLOW_TEST_GUIDE.md
+
+# IDE
+.vscode/
+.idea/
