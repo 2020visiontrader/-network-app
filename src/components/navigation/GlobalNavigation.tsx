@@ -6,7 +6,7 @@ interface User {
   id: string
   name: string
   email: string
-  status: 'active' | 'pending' | 'waitlisted' | 'suspended'
+  status: 'active' | 'pending' | 'suspended'
   profile_progress: number
   is_ambassador: boolean
   created_at: string

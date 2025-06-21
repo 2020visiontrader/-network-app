@@ -4,8 +4,8 @@ import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
-export function withAuth(WrappedComponent: React.ComponentType) {
-  return function AuthenticatedComponent(props: any) {
+export function withAuth<T extends object>(WrappedComponent: React.ComponentType<T>) {
+  return function AuthenticatedComponent(props: T) {
     const supabase = createClientComponentClient();
     const router = useRouter();
 

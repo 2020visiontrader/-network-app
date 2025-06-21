@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1.00001, viewport-fit=cover"
+  />
+  <title>Network Founder App</title>
+  <style>
+    /* These styles make the body full-height */
+    html, body { height: 100%; }
+    /* These styles disable body scrolling and overscroll behavior */
+    body {
+      overflow: hidden;
+      overscroll-behavior: none;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      background-color: #1f2937;
+    }
+    /* These styles make the root element full-height */
+    #root {
+      display: flex;
+      height: 100%;
+    }
+    /* Loading indicator styles */
+    .loading-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      width: 100%;
+      background-color: #1f2937;
+      color: white;
+    }
+    .loading-spinner {
+      width: 50px;
+      height: 50px;
+      border: 5px solid rgba(255, 255, 255, 0.2);
+      border-top-color: #7d58ff;
+      border-radius: 50%;
+      animation: spin 1s ease-in-out infinite;
+      margin-bottom: 20px;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+  <!-- Remove the external bundle reference and use inline script -->
+</head>
+<body>
+  <div id="root">
+    <div class="loading-container">
+      <div class="loading-spinner"></div>
+      <p>Loading Network Founder App...</p>
+      <p style="font-size: 12px; margin-top: 10px;">If the app doesn't load, try refreshing the page.</p>
+    </div>
+  </div>
+  
+  <!-- Add polyfills for compatibility -->
+  <script>
+    // Polyfill for older browsers
+    if (!window.process) {
+      window.process = { env: { NODE_ENV: 'production' } };
+    }
+    
+    // Simple inline script to show app content
+    document.addEventListener('DOMContentLoaded', function() {
+      // Get the root element
+      const root = document.getElementById('root');
+      
+      // Remove loading spinner
+      root.innerHTML = '';
+      
+      // Create app container
+      const appContainer = document.createElement('div');
+      appContainer.style.display = 'flex';
+      appContainer.style.flexDirection = 'column';
+      appContainer.style.alignItems = 'center';
+      appContainer.style.justifyContent = 'center';
+      appContainer.style.height = '100%';
+      appContainer.style.width = '100%';
+      appContainer.style.padding = '20px';
+      
+      // Create title
+      const title = document.createElement('h1');
+      title.textContent = 'Network Founder App';
+      title.style.fontSize = '24px';
+      title.style.fontWeight = 'bold';
+      title.style.color = '#ffffff';
+      title.style.marginBottom = '10px';
+      
+      // Create subtitle
+      const subtitle = document.createElement('h2');
+      subtitle.textContent = 'Web Version';
+      subtitle.style.fontSize = '18px';
+      subtitle.style.color = '#7d58ff';
+      subtitle.style.marginBottom = '30px';
+      
+      // Create info container
+      const infoContainer = document.createElement('div');
+      infoContainer.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+      infoContainer.style.padding = '20px';
+      infoContainer.style.borderRadius = '10px';
+      infoContainer.style.maxWidth = '500px';
+      infoContainer.style.marginBottom = '30px';
+      
+      // Create info text
+      const info1 = document.createElement('p');
+      info1.textContent = 'This is the web version of the NetworkFounderApp.';
+      info1.style.fontSize = '16px';
+      info1.style.color = '#ffffff';
+      info1.style.marginBottom = '10px';
+      info1.style.textAlign = 'center';
+      
+      const info2 = document.createElement('p');
+      info2.textContent = 'The full mobile experience is available on iOS and Android.';
+      info2.style.fontSize = '16px';
+      info2.style.color = '#ffffff';
+      info2.style.marginBottom = '10px';
+      info2.style.textAlign = 'center';
+      
+      // Create button
+      const button = document.createElement('button');
+      button.style.backgroundColor = '#7d58ff';
+      button.style.padding = '12px 24px';
+      button.style.borderRadius = '8px';
+      button.style.marginTop = '20px';
+      button.style.cursor = 'pointer';
+      button.style.border = 'none';
+      button.onclick = function() {
+        alert('Web version is working!');
+        console.log('Web version is working!');
+      };
+      
+      const buttonText = document.createElement('span');
+      buttonText.textContent = 'Test Connection';
+      buttonText.style.color = '#ffffff';
+      buttonText.style.fontSize = '16px';
+      buttonText.style.fontWeight = 'bold';
+      
+      // Create QR code link
+      const qrLink = document.createElement('a');
+      qrLink.textContent = 'View QR Codes for Mobile';
+      qrLink.href = '/qrcodes/index.html';
+      qrLink.style.color = '#7d58ff';
+      qrLink.style.marginTop = '30px';
+      qrLink.style.textDecoration = 'underline';
+      
+      // Create Android testing link
+      const androidTestingLink = document.createElement('a');
+      androidTestingLink.textContent = 'Android Testing Guide';
+      androidTestingLink.href = '/ANDROID_EMULATOR_SETUP.md';
+      androidTestingLink.style.color = '#7d58ff';
+      androidTestingLink.style.marginTop = '15px';
+      androidTestingLink.style.textDecoration = 'underline';
+      
+      // Create comprehensive testing guide link
+      const testingGuideLink = document.createElement('a');
+      testingGuideLink.textContent = 'Mobile Testing Guide';
+      testingGuideLink.href = '/MOBILE_TESTING_GUIDE.md';
+      testingGuideLink.style.color = '#7d58ff';
+      testingGuideLink.style.marginTop = '15px';
+      testingGuideLink.style.textDecoration = 'underline';
+      
+      // Assemble the DOM
+      button.appendChild(buttonText);
+      infoContainer.appendChild(info1);
+      infoContainer.appendChild(info2);
+      
+      appContainer.appendChild(title);
+      appContainer.appendChild(subtitle);
+      appContainer.appendChild(infoContainer);
+      appContainer.appendChild(button);
+      appContainer.appendChild(qrLink);
+      appContainer.appendChild(androidTestingLink);
+      appContainer.appendChild(testingGuideLink);
+      
+      root.appendChild(appContainer);
+    });
+  </script>
+</body>
+</html>

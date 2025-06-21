@@ -6,6 +6,16 @@ interface PersonalAnalyticsProps {
   userId: string
 }
 
+interface UserAnalytics {
+  coffeeChatsScheduled: number;
+  introsMade: number;
+  mastermindsCreated: number;
+  eventsRSVPed: number;
+  profileCompleteness: number;
+  connectionsCount: number;
+  activeDays: number;
+}
+
 interface Milestone {
   id: string
   title: string
@@ -18,7 +28,7 @@ interface Milestone {
 }
 
 export default function PersonalAnalytics({ userId }: PersonalAnalyticsProps) {
-  const [userAnalytics, setUserAnalytics] = useState<any | null>(null)
+  const [userAnalytics, setUserAnalytics] = useState<UserAnalytics | null>(null)
   const [showCelebration, setShowCelebration] = useState(false)
   const [newMilestone, setNewMilestone] = useState<Milestone | null>(null)
 
@@ -30,7 +40,7 @@ export default function PersonalAnalytics({ userId }: PersonalAnalyticsProps) {
     // }
   }, [userId])
 
-  const checkForNewMilestones = (analytics: any) => {
+  const checkForNewMilestones = (analytics: UserAnalytics) => {
     const milestones = getMilestones(analytics)
     const newlyCompleted = milestones.find(m => 
       m.isCompleted && 
@@ -50,7 +60,7 @@ export default function PersonalAnalytics({ userId }: PersonalAnalyticsProps) {
     }
   }
 
-  const getMilestones = (analytics: any): Milestone[] => {
+  const getMilestones = (analytics: UserAnalytics): Milestone[] => {
     return [
       {
         id: 'coffee_chats_5',

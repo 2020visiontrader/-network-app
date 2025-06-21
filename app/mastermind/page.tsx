@@ -123,7 +123,7 @@ export default function MastermindPage() {
             ].map((tab) => (
               <button
                 key={tab.key}
-                onClick={() => setActiveTab(tab.key as any)}
+                onClick={() => setActiveTab(tab.key as 'active' | 'upcoming' | 'past')}
                 className={`px-6 py-3 rounded-lg font-medium transition-all duration-200 ${
                   activeTab === tab.key
                     ? 'bg-purple-600 text-white shadow-lg'

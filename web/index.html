@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1.00001, viewport-fit=cover"
+  />
+  <title>Network Founder App</title>
+  <style>
+    /* These styles make the body full-height */
+    html, body { height: 100%; }
+    /* These styles disable body scrolling and overscroll behavior */
+    body {
+      overflow: hidden;
+      overscroll-behavior: none;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    }
+    /* These styles make the root element full-height */
+    #root {
+      display: flex;
+      height: 100%;
+    }
+    /* Loading indicator styles */
+    .loading-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      width: 100%;
+      background-color: #1f2937;
+      color: white;
+    }
+    .loading-spinner {
+      width: 50px;
+      height: 50px;
+      border: 5px solid rgba(255, 255, 255, 0.2);
+      border-top-color: #7d58ff;
+      border-radius: 50%;
+      animation: spin 1s ease-in-out infinite;
+      margin-bottom: 20px;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div id="root">
+    <div class="loading-container">
+      <div class="loading-spinner"></div>
+      <p>Loading Network Founder App...</p>
+    </div>
+  </div>
+</body>
+</html>

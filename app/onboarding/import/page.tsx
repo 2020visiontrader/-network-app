@@ -78,7 +78,7 @@ export default function OnboardingImport() {
                   <button
                     key={method.id}
                     type="button"
-                    onClick={() => setImportMethod(method.id as any)}
+                    onClick={() => setImportMethod(method.id as 'google' | 'csv' | 'manual')}
                     className={`p-6 rounded-lg border text-left transition relative ${
                       importMethod === method.id
                         ? 'bg-purple-600/20 text-white border-purple-400'

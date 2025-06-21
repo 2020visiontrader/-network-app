@@ -6,7 +6,6 @@ type Tables = Database['public']['Tables']
 type UserRow = Tables['users']['Row']
 type UserInsert = Tables['users']['Insert']
 type UserUpdate = Tables['users']['Update']
-type WaitlistInsert = Tables['waitlist']['Insert']
 type AnnouncementInsert = Tables['announcements']['Insert']
 type UsageMetricInsert = Tables['usage_metrics']['Insert']
 
@@ -69,69 +68,6 @@ export async function getUserById(userId: string): Promise<UserRow | null> {
   } catch (error) {
     console.error('Error fetching user:', error)
     return null
-  }
-}
-
-// Waitlist Management
-export async function submitWaitlistUser(waitlistData: WaitlistInsert): Promise<boolean> {
-  try {
-    const { error } = await supabase
-      .from('waitlist')
-      .insert(waitlistData)
-
-    if (error) {
-      console.error('Error submitting waitlist user:', error)
-      return false
-    }
-
-    return true
-  } catch (error) {
-    console.error('Error submitting waitlist user:', error)
-    return false
-  }
-}
-
-export async function getWaitlistUsers() {
-  try {
-    const { data, error } = await supabase
-      .from('waitlist')
-      .select('*')
-      .order('joined_at', { ascending: false })
-
-    if (error) {
-      console.error('Error fetching waitlist:', error)
-      return []
-    }
-
-    return data
-  } catch (error) {
-    console.error('Error fetching waitlist:', error)
-    return []
-  }
-}
-
-export async function updateWaitlistStatus(
-  waitlistId: string, 
-  status: 'pending' | 'approved' | 'declined'
-): Promise<boolean> {
-  try {
-    const { error } = await supabase
-      .from('waitlist')
-      .update({ 
-        status, 
-        processed_at: new Date().toISOString() 
-      })
-      .eq('id', waitlistId)
-
-    if (error) {
-      console.error('Error updating waitlist status:', error)
-      return false
-    }
-
-    return true
-  } catch (error) {
-    console.error('Error updating waitlist status:', error)
-    return false
   }
 }
 
@@ -288,25 +224,35 @@ export async function triggerReferralInvite(
       return false
     }
 
-    // Add to waitlist with referral code
-    const waitlistData: WaitlistInsert = {
+    // Create user invitation instead of waitlist
+    const invitationData = {
       email: inviteeEmail,
-      referrer_code: referrer.referral_code,
+      referrer_id: referrerUserId,
       status: 'pending',
-      joined_at: new Date().toISOString()
+      created_at: new Date().toISOString()
     }
 
-    const success = await submitWaitlistUser(waitlistData)
-    
-    if (success) {
+    try {
+      const { error } = await supabase
+        .from('invitations')
+        .insert(invitationData)
+
+      if (error) {
+        console.error('Error creating invitation:', error)
+        return false
+      }
+      
       // Log the referral action
       await logUserAction(referrerUserId, 'intro_made', {
         invitee_email: inviteeEmail,
         custom_message: customMessage
       })
+      
+      return true
+    } catch (error) {
+      console.error('Error creating invitation:', error)
+      return false
     }
-
-    return success
   } catch (error) {
     console.error('Error triggering referral invite:', error)
     return false

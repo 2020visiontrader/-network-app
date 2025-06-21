@@ -239,7 +239,7 @@ export default function StatusUpdate({ currentStatus, onStatusUpdate, onStatusCl
           {intensityOptions.map((option) => (
             <button
               key={option.value}
-              onClick={() => setIntensity(option.value as any)}
+              onClick={() => setIntensity(option.value as 'casual' | 'semi-active' | 'urgent')}
               className={`p-3 rounded-lg border text-left transition ${
                 intensity === option.value
                   ? getIntensityStyle(option.value)

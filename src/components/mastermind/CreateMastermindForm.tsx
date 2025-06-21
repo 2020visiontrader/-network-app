@@ -5,6 +5,17 @@ interface CreateMastermindFormProps {
   onClose: () => void
 }
 
+interface MastermindFormData {
+  name: string;
+  goal: string;
+  tags: string[];
+  maxMembers: number;
+  cadence: string;
+  preferredDay: string;
+  preferredTime: string;
+  resourceLinks: string[];
+}
+
 const availableTags = [
   'B2B SaaS', 'Funding', 'GTM', 'Climate Tech', 'Impact', 'Web3', 'Leadership', 
   'Diversity', 'AI', 'Fintech', 'Wellness', 'Creative', 'Marketing', 'Sales',
@@ -25,7 +36,7 @@ const timeSlots = [
 const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
 export default function CreateMastermindForm({ onClose }: CreateMastermindFormProps) {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<MastermindFormData>({
     name: '',
     goal: '',
     tags: [] as string[],
@@ -38,7 +49,7 @@ export default function CreateMastermindForm({ onClose }: CreateMastermindFormPr
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
 
-  const updateFormData = (field: string, value: any) => {
+  const updateFormData = (field: keyof MastermindFormData, value: string | number | string[]) => {
     setFormData(prev => ({ ...prev, [field]: value }))
   }
 

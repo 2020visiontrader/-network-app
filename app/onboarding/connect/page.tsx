@@ -106,7 +106,7 @@ export default function OnboardingConnect() {
                   <button
                     key={option.value}
                     type="button"
-                    onClick={() => setFormData(prev => ({ ...prev, meetingPreference: option.value as any }))}
+                    onClick={() => setFormData(prev => ({ ...prev, meetingPreference: option.value as 'virtual' | 'in-person' | 'both' }))}
                     className={`flex-1 px-4 py-3 rounded-lg border text-sm transition ${
                       formData.meetingPreference === option.value
                         ? 'bg-purple-600 text-white border-purple-400'
@@ -179,7 +179,7 @@ export default function OnboardingConnect() {
                   <button
                     key={option.value}
                     type="button"
-                    onClick={() => setFormData(prev => ({ ...prev, mentorshipRole: option.value as any }))}
+                    onClick={() => setFormData(prev => ({ ...prev, mentorshipRole: option.value as 'seeking' | 'offering' | 'both' }))}
                     className={`p-4 rounded-lg border text-left transition ${
                       formData.mentorshipRole === option.value
                         ? 'bg-purple-600/20 text-white border-purple-400'

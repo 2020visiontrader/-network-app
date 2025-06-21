@@ -183,39 +183,30 @@ export interface Database {
           created_at?: string
         }
       }
-      waitlist: {
+      invitations: {
         Row: {
           id: string
           email: string
-          name: string | null
-          referrer_code: string | null
-          status: 'pending' | 'approved' | 'declined'
-          reason: string | null
-          linkedin_url: string | null
-          joined_at: string
-          processed_at: string | null
+          referrer_id: string
+          status: 'pending' | 'accepted' | 'declined'
+          created_at: string
+          accepted_at: string | null
         }
         Insert: {
           id?: string
           email: string
-          name?: string | null
-          referrer_code?: string | null
-          status?: 'pending' | 'approved' | 'declined'
-          reason?: string | null
-          linkedin_url?: string | null
-          joined_at?: string
-          processed_at?: string | null
+          referrer_id: string
+          status?: 'pending' | 'accepted' | 'declined'
+          created_at?: string
+          accepted_at?: string | null
         }
         Update: {
           id?: string
           email?: string
-          name?: string | null
-          referrer_code?: string | null
-          status?: 'pending' | 'approved' | 'declined'
-          reason?: string | null
-          linkedin_url?: string | null
-          joined_at?: string
-          processed_at?: string | null
+          referrer_id?: string
+          status?: 'pending' | 'accepted' | 'declined'
+          created_at?: string
+          accepted_at?: string | null
         }
       }
       announcements: {

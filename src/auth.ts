@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import type { Database } from '@/lib/database.types';
+import type { Session } from '@supabase/supabase-js';
 
 export type SignUpCredentials = {
   email: string;
@@ -85,7 +86,7 @@ export const authService = {
   },
 
   // Subscribe to auth state changes
-  onAuthStateChange: (callback: (event: 'SIGNED_IN' | 'SIGNED_OUT', session: any) => void) => {
+  onAuthStateChange: (callback: (event: 'SIGNED_IN' | 'SIGNED_OUT', session: Session | null) => void) => {
     return supabase.auth.onAuthStateChange((event, session) => {
       callback(event as 'SIGNED_IN' | 'SIGNED_OUT', session);
     });

@@ -1,0 +1,9 @@
+// Add this interface to the beginning of FounderService.ts
+
+interface FounderFilters {
+  industry?: string;
+  location_city?: string;
+  role?: string;
+  limit?: number;
+  [key: string]: any;
+}

@@ -1,12 +1,18 @@
 import { useEffect, useState, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
-import type { RealtimeChannel } from '@supabase/supabase-js'
+import type { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js'
+import { Database } from '@/lib/database.types'
+
+// Define a type for our payload based on the database types
+export type RealtimePayload = RealtimePostgresChangesPayload<{
+  [key: string]: unknown;
+}>
 
 interface RealTimeUpdateOptions {
   table: string
   event?: 'INSERT' | 'UPDATE' | 'DELETE' | '*'
   filter?: string
-  onUpdate?: (payload: any) => void
+  onUpdate?: (payload: RealtimePayload) => void
   showToast?: boolean
 }
 
@@ -48,7 +54,7 @@ export function useRealTimeUpdate({
     setNotifications(prev => prev.filter(n => n.id !== id))
   }, [])
 
-  const getEventMessage = useCallback((tableName: string, eventType: string, payload: any) => {
+  const getEventMessage = useCallback((tableName: string, eventType: string, payload: RealtimePayload) => {
     const tableDisplayNames: Record<string, string> = {
       coffee_chats: 'Coffee Chat',
       events: 'Event',
@@ -82,14 +88,14 @@ export function useRealTimeUpdate({
     const subscription = supabase
       .channel(channelName)
       .on(
-        'postgres_changes' as any,
+        'postgres_changes' as unknown as Parameters<RealtimeChannel['on']>[0],
         {
           event,
           schema: 'public',
           table,
           filter
-        } as any,
-        (payload: any) => {
+        } as unknown as Parameters<RealtimeChannel['on']>[1],
+        (payload: RealtimePayload) => {
           console.log('Real-time update received:', payload)
 
           // Call custom handler if provided
@@ -104,7 +110,7 @@ export function useRealTimeUpdate({
           }
         }
       )
-      .subscribe((status: any) => {
+      .subscribe((status: 'SUBSCRIBED' | 'TIMED_OUT' | 'CLOSED' | 'CHANNEL_ERROR') => {
         console.log('Subscription status:', status)
         setIsConnected(status === 'SUBSCRIBED')
       })
@@ -136,7 +142,7 @@ export function useRealTimeUpdate({
 }
 
 // Specialized hooks for common use cases
-export function useCoffeeChatUpdates(onUpdate?: (payload: any) => void) {
+export function useCoffeeChatUpdates(onUpdate?: (payload: RealtimePayload) => void) {
   return useRealTimeUpdate({
     table: 'coffee_chats',
     onUpdate,
@@ -144,7 +150,7 @@ export function useCoffeeChatUpdates(onUpdate?: (payload: any) => void) {
   })
 }
 
-export function useEventUpdates(onUpdate?: (payload: any) => void) {
+export function useEventUpdates(onUpdate?: (payload: RealtimePayload) => void) {
   return useRealTimeUpdate({
     table: 'events',
     onUpdate,
@@ -152,7 +158,7 @@ export function useEventUpdates(onUpdate?: (payload: any) => void) {
   })
 }
 
-export function useConnectionUpdates(userId?: string, onUpdate?: (payload: any) => void) {
+export function useConnectionUpdates(userId?: string, onUpdate?: (payload: RealtimePayload) => void) {
   return useRealTimeUpdate({
     table: 'connections',
     filter: userId ? `initiator_id=eq.${userId},receiver_id=eq.${userId}` : undefined,
@@ -161,7 +167,7 @@ export function useConnectionUpdates(userId?: string, onUpdate?: (payload: any) 
   })
 }
 
-export function useMastermindUpdates(onUpdate?: (payload: any) => void) {
+export function useMastermindUpdates(onUpdate?: (payload: RealtimePayload) => void) {
   return useRealTimeUpdate({
     table: 'masterminds',
     onUpdate,
@@ -169,7 +175,7 @@ export function useMastermindUpdates(onUpdate?: (payload: any) => void) {
   })
 }
 
-export function useAnnouncementUpdates(onUpdate?: (payload: any) => void) {
+export function useAnnouncementUpdates(onUpdate?: (payload: RealtimePayload) => void) {
   return useRealTimeUpdate({
     table: 'announcements',
     event: 'INSERT',

@@ -146,7 +146,7 @@ export default function MetricsBoard() {
           {['overview', 'growth', 'influence'].map((tab) => (
             <button
               key={tab}
-              onClick={() => setActiveTab(tab as any)}
+              onClick={() => setActiveTab(tab as 'overview' | 'growth' | 'influence')}
               className={`px-3 py-1 text-xs rounded transition ${
                 activeTab === tab
                   ? 'bg-purple-600 text-white'

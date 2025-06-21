@@ -22,7 +22,7 @@ export default function AmbassadorForm({ onClose, onSubmit }: AmbassadorFormProp
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
 
-  const updateFormData = (field: keyof ApplicationData, value: any) => {
+  const updateFormData = (field: keyof ApplicationData, value: string | number | string[]) => {
     setFormData(prev => ({ ...prev, [field]: value }))
   }
 

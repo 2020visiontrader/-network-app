@@ -1,0 +1,11 @@
+// Add this interface to the beginning of FormValidator.ts
+
+interface FormErrors {
+  tags_or_interests?: string;
+  linkedin_url?: string;
+  full_name?: string;
+  bio?: string;
+  company_name?: string;
+  location_city?: string;
+  [key: string]: string | undefined;
+}

@@ -3,16 +3,27 @@
 import { useState, useEffect } from 'react';
 import { withAuth } from '@/components/withAuth';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import { Database } from '@/lib/database.types';
+import { Database } from '@/types/database.types';
 
 type Founder = any;
 type Connection = any;
+
+interface NewContact {
+  contact_name?: string;
+  email?: string;
+  company?: string;
+  role?: string;
+  reminder_frequency?: 'weekly' | 'monthly' | 'quarterly';
+  notes?: string;
+  relationship_type?: string;
+  birthdate?: string;
+}
 
 const ContactsPage = () => {
   const [connections, setConnections] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentFounderId, setCurrentFounderId] = useState<string | null>(null);
-  const [newContact, setNewContact] = useState<any>({});
+  const [newContact, setNewContact] = useState<NewContact>({});
   const [showAddForm, setShowAddForm] = useState<boolean>(false);
 
   const [contacts, setContacts] = useState<any[]>([]);
@@ -147,7 +158,7 @@ const ContactsPage = () => {
                 Reminder Frequency
                 <select
                   value={newContact.reminder_frequency}
-                  onChange={(e) => setNewContact({...newContact, reminder_frequency: e.target.value as any})}
+                  onChange={(e) => setNewContact({...newContact, reminder_frequency: e.target.value as 'weekly' | 'monthly' | 'quarterly'})}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
                 >
                   <option value="weekly">Weekly</option>

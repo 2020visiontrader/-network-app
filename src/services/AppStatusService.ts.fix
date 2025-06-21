@@ -1,0 +1,33 @@
+// Fix for AppStatusService.ts
+// Replace the beginning of the file with this properly typed version
+
+interface ServiceStatus {
+  status: string;
+  [key: string]: any;
+}
+
+interface Services {
+  database?: ServiceStatus;
+  schema?: ServiceStatus;
+  auth?: ServiceStatus;
+  [key: string]: ServiceStatus | undefined;
+}
+
+interface HealthResult {
+  timestamp: string;
+  overall: string;
+  services: Services;
+  error?: string;
+}
+
+interface DiagnosticResult {
+  timestamp: string;
+  app: {
+    version: string;
+    build: string;
+    environment: "development" | "production" | "test";
+  };
+  health: HealthResult;
+  user?: any;
+  recommendations?: string[];
+}

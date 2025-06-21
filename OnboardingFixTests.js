@@ -1,5 +1,5 @@
 // OnboardingFixTests.js - Test for the onboarding flow with all fixes
-import { supabase } from './src/services/supabase';
+import { supabase } from './src/services/supabase.js';
 
 // Test configuration
 const TEST_USER = {

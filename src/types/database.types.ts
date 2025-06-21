@@ -1,6 +1,21 @@
 // This file defines TypeScript interfaces that match your Supabase schema
 // Update these interfaces based on the results of the database_schema_verification.sql script
 
+export interface FounderOnboardingData {
+  linkedin_url?: string;
+  location_city?: string;
+  industry?: string;
+  company_name?: string;
+  role?: string;
+  bio?: string;
+  tags_or_interests?: string;
+  full_name?: string;
+  profile_visible?: boolean;
+  onboarding_completed?: boolean;
+  profile_progress?: number;
+  [key: string]: string | number | boolean | undefined;
+}
+
 export interface Database {
   public: {
     Tables: {
@@ -57,7 +72,7 @@ export interface Database {
     };
     Functions: {
       upsert_founder_onboarding: {
-        Args: { p_user_id: string; user_email: string; founder_data: any };
+        Args: { p_user_id: string; user_email: string; founder_data: FounderOnboardingData };
         Returns: string;
       };
       is_valid_linkedin_url: {

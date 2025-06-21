@@ -30,7 +30,7 @@ export default function SignupFormComponent() {
   const [error, setError] = useState('')
   const router = useRouter()
 
-  const toggle = (list: string[], setList: any, value: string) => {
+  const toggle = (list: string[], setList: React.Dispatch<React.SetStateAction<string[]>>, value: string) => {
     setList((prev: string[]) =>
       prev.includes(value)
         ? prev.filter(v => v !== value)
@@ -63,7 +63,7 @@ export default function SignupFormComponent() {
         console.error('Google sign-up error:', error)
         setError('Google sign-up failed. Please try again.')
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Google sign-up error:', error)
       setError('Google sign-up failed. Please try again.')
     } finally {
@@ -194,7 +194,7 @@ export default function SignupFormComponent() {
           Become one of our first 250 founding members
         </p>
         <div className="mt-2 text-sm text-purple-400">
-          🚀 Instant access • No waitlist • Full features
+          🚀 Instant access • Full features • Start networking today
         </div>
       </div>
 

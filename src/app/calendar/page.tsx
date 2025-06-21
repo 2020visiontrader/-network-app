@@ -13,7 +13,13 @@ interface CalendarEvent {
   date: string;
   time?: string;
   icon: string;
-  details?: any;
+  details?: {
+    description?: string;
+    location?: string;
+    participants?: string[];
+    status?: string;
+    [key: string]: string | string[] | number | boolean | undefined;
+  };
 }
 
 export default function CalendarPage() {

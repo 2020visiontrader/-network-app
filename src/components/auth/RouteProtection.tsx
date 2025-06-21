@@ -5,7 +5,7 @@ interface User {
   id: string
   name: string
   email: string
-  status: 'active' | 'pending' | 'waitlisted' | 'suspended'
+  status: 'active' | 'pending' | 'suspended'
   profile_progress: number
   is_ambassador: boolean
   created_at: string
@@ -177,7 +177,6 @@ export function useRouteAccess(user: User | null) {
   const getRedirectPath = (): string | null => {
     if (!user) return '/login'
 
-    if (user.status === 'waitlisted') return '/waitlist'
     if (user.status === 'suspended') return '/suspended'
     if (user.profile_progress < 100) return '/onboarding/profile'
 

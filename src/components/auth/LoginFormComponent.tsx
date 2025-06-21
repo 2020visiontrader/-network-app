@@ -32,7 +32,7 @@ export default function LoginFormComponent() {
         console.error('Google sign-in error:', error)
         setError('Google sign-in failed. Please try again.')
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Google sign-in error:', error)
       setError('Google sign-in failed. Please try again.')
     } finally {
@@ -80,7 +80,7 @@ export default function LoginFormComponent() {
         id: founderData.id,
         name: founderData.full_name,
         email: founderData.email,
-        status: founderData.is_active ? 'active' : 'pending' as 'active' | 'pending' | 'waitlisted' | 'suspended',
+        status: founderData.is_active ? 'active' : 'pending' as 'active' | 'pending' | 'suspended',
         profile_progress: founderData.onboarding_completed ? 100 : 50,
         is_ambassador: false,
         created_at: founderData.created_at
@@ -98,12 +98,16 @@ export default function LoginFormComponent() {
       } else if (user.status === 'active') {
         router.push('/dashboard')
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Login error:', error)
-      if (error.message && error.message.includes('Failed to fetch')) {
-        setError('Connection failed. Please check your internet connection and try again.')
+      if (error instanceof Error) {
+        if (error.message && error.message.includes('Failed to fetch')) {
+          setError('Connection failed. Please check your internet connection and try again.')
+        } else {
+          setError(error.message || 'Login failed. Please try again.')
+        }
       } else {
-        setError(error.message || 'Login failed. Please try again.')
+        setError('Login failed. Please try again.')
       }
     } finally {
       setIsLoading(false)
@@ -128,8 +132,12 @@ export default function LoginFormComponent() {
       if (error) throw error
 
       setResetMessage('Password reset email sent! Check your inbox.')
-    } catch (error: any) {
-      setError(error.message || 'Failed to send reset email')
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setError(error.message || 'Failed to send reset email')
+      } else {
+        setError('Failed to send reset email')
+      }
     } finally {
       setIsResettingPassword(false)
     }
