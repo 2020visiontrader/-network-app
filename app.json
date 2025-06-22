@@ -7,7 +7,7 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "platforms": ["ios", "android", "web"],
-    "sdkVersion": "51.0.0",
+    "sdkVersion": "53.0.0",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",

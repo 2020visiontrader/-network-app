@@ -68,10 +68,16 @@ export default function LoginFormComponent() {
         .from('founders')
         .select('*')
         .eq('id', authData.user.id)
-        .single()
+        .maybeSingle() // ✅ Avoids PGRST116 error
 
-      if (founderError || !founderData) {
-        console.error('Founder lookup error:', founderError)
+      if (founderError) {
+        console.error('[Login] Founder lookup error:', founderError.message)
+        setError('Database error occurred. Please try again.')
+        return
+      }
+
+      if (!founderData) {
+        console.warn('[Login] Founder account not found for user:', authData.user.id)
         setError('Founder account not found. Please contact support or apply as a founder.')
         return
       }

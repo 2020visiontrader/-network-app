@@ -99,7 +99,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         .from('founders')
         .select('*')
         .eq('id', userId)
-        .single();
+        .maybeSingle();
 
       console.log('Fetch user data result:', { data, error });
 
@@ -282,16 +282,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           .from('founders')
           .select('*')
           .eq('id', user.id)
-          .single();
+          .maybeSingle(); // ✅ Avoids PGRST116 error
 
         if (error) {
-          if (error.code === 'PGRST116') {
-            // User not found in founders table
-            console.log('User not found in founders table (normal for new users)');
-            setUserData(null);
-            return null;
-          }
-          throw error;
+          console.error('[Profile Fetch Error]', error.message);
+          setUserData(null);
+          return null;
+        }
+
+        if (!data) {
+          console.log('[Profile Missing] User not found in founders table (normal for new users)');
+          setUserData(null);
+          return null;
         }
         
         console.log('Setting refreshed user data:', data);

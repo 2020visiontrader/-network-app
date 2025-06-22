@@ -1,7 +1,27 @@
-'use client'
 import { useState } from 'react'
-import Link from 'next/link'
-import OnboardingProgress from '@/components/OnboardingProgress'
+
+// Simple progress component for testing
+function OnboardingProgress({ currentStep, totalSteps, stepTitle }: { currentStep: number, totalSteps: number, stepTitle: string }) {
+  const progress = (currentStep / totalSteps) * 100
+  return (
+    <div className="w-full max-w-4xl mx-auto px-6 py-8">
+      <div className="text-center mb-6">
+        <p className="text-sm text-gray-400 mb-2">
+          Step {currentStep} of {totalSteps}
+        </p>
+        <h2 className="text-xl font-semibold text-white">
+          {stepTitle}
+        </h2>
+      </div>
+      <div className="w-full bg-zinc-800 rounded-full h-2 mb-8">
+        <div 
+          className="bg-gradient-to-r from-purple-500 to-yellow-400 h-2 rounded-full transition-all duration-500 ease-out"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+    </div>
+  )
+}
 
 const TIME_SLOTS = [
   '9:00 AM', '10:00 AM', '11:00 AM', '12:00 PM',
@@ -219,23 +239,23 @@ export default function OnboardingConnect() {
 
           {/* Navigation */}
           <div className="flex justify-between items-center mt-8 pt-6 border-t border-zinc-700">
-            <Link 
-              href="/onboarding/expertise"
+            <button 
               className="px-6 py-2 text-gray-400 hover:text-white transition"
+              onClick={() => window.history.back()}
             >
               ← Back
-            </Link>
+            </button>
             
             <div className="flex space-x-4">
               <button className="px-6 py-2 text-gray-400 hover:text-white transition">
                 Save & Exit
               </button>
-              <Link 
-                href="/onboarding/import"
+              <button 
                 className="px-8 py-3 bg-gradient-to-r from-purple-600 to-yellow-500 hover:from-purple-700 hover:to-yellow-600 transition rounded-lg font-semibold text-white"
+                onClick={() => alert('Continue to next step')}
               >
                 Continue →
-              </Link>
+              </button>
             </div>
           </div>
         </div>

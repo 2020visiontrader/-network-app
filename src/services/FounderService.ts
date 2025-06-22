@@ -44,7 +44,7 @@ export class FounderService {
         .from('founders')
         .insert([founderData])
         .select()
-        .single();
+        .maybeSingle(); // ✅ Avoids PGRST116 error
 
       if (error) throw error;
 
@@ -74,7 +74,7 @@ export class FounderService {
         })
         .eq('id', founderId)
         .select()
-        .single();
+        .maybeSingle(); // ✅ Avoids PGRST116 error
 
       if (error) throw error;
 
@@ -130,17 +130,24 @@ export class FounderService {
         .from('founders')
         .select('*')
         .eq('id', founderId)
-        .single();
+        .maybeSingle(); // ✅ Avoids PGRST116 error
 
       if (error) {
-        if (error.code === 'PGRST116') {
-          return {
-            success: false,
-            error: 'Founder not found',
-            code: 'NOT_FOUND'
-          };
-        }
-        throw error;
+        console.error('[Founder Fetch Error]', error.message);
+        return {
+          success: false,
+          error: error.message,
+          code: error.code
+        };
+      }
+
+      if (!data) {
+        console.warn('[Founder Missing] No profile found for founder ID:', founderId);
+        return {
+          success: false,
+          error: 'Founder not found',
+          code: 'NOT_FOUND'
+        };
       }
 
       return {
@@ -347,7 +354,7 @@ export class FounderService {
           .from('founders')
           .select('onboarding_completed, profile_progress')
           .eq('id', userId)
-          .single();
+          .maybeSingle(); // ✅ Avoids PGRST116 error
           
         if (checkStatusError) {
           console.error('Error checking onboarding status:', checkStatusError);
@@ -471,7 +478,7 @@ export class FounderService {
           .from('founders')
           .select('onboarding_completed, profile_progress')
           .eq('id', userId)
-          .single();
+          .maybeSingle(); // ✅ Avoids PGRST116 error
           
         if (checkStatusError) {
           console.error('Error checking onboarding status after manual update:', checkStatusError);

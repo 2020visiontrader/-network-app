@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
-import HiveHexGrid from '@/components/HiveHexGrid'
+import { supabase } from '../../src/lib/supabase'
+import HiveHexGrid from '../../src/components/HiveHexGrid'
 
 interface OnboardingData {
   full_name: string
@@ -12,6 +12,51 @@ interface OnboardingData {
   industry: string
   tagline: string
   profile_photo_url: string
+}
+
+// 🧠 Fetch founder profile with safe fallback handling
+async function fetchFounderProfile(userId: string) {
+  try {
+    console.log('[Founder Fetch] Attempting to fetch profile for user:', userId);
+    
+    const { data: founder, error } = await supabase
+      .from('founders')
+      .select('*')
+      .eq('user_id', userId)
+      .maybeSingle(); // ✅ Avoids throwing if no match is found
+
+    if (error) {
+      console.error('[Founder Fetch Error]', error.message);
+      return {
+        success: false,
+        error: 'We could not access your founder profile. Please try again or contact support.',
+        data: null
+      };
+    }
+
+    if (!founder) {
+      console.warn('[Founder Missing]', 'No profile found for user ID:', userId);
+      return {
+        success: false,
+        error: 'Your profile was saved but we could not verify the update. Please try again.',
+        data: null
+      };
+    }
+
+    console.log('[Founder Found]', founder);
+    return {
+      success: true,
+      error: null,
+      data: founder
+    };
+  } catch (e) {
+    console.error('[Unexpected Error]', e);
+    return {
+      success: false,
+      error: 'Something went wrong while loading your profile.',
+      data: null
+    };
+  }
 }
 
 export default function OnboardingPage() {
@@ -46,10 +91,16 @@ export default function OnboardingPage() {
           .from('founders')
           .select('*')
           .eq('id', authUser.id)
-          .single()
+          .maybeSingle() // ✅ Avoids PGRST116 error
 
-        if (founderError || !founder) {
-          // Not a founder yet - redirect to login
+        if (founderError) {
+          console.error('[Founder Fetch Error]', founderError.message);
+          router.push('/login')
+          return
+        }
+
+        if (!founder) {
+          console.log('[Founder Missing] User not found in founders table - redirecting to login');
           router.push('/login')
           return
         }
@@ -117,8 +168,10 @@ export default function OnboardingPage() {
         return
       }
 
-      // Update founders table
-      const { error: updateError } = await supabase
+      console.log('[Onboarding] Starting save process for user:', user.id);
+
+      // Update founders table with maybeSingle for safety
+      const { data: updateResult, error: updateError } = await supabase
         .from('founders')
         .update({
           full_name: formData.full_name,
@@ -127,20 +180,43 @@ export default function OnboardingPage() {
           industry: formData.industry,
           tagline: formData.tagline,
           profile_photo_url: formData.profile_photo_url,
-          onboarding_completed: true
+          onboarding_completed: true,
+          updated_at: new Date().toISOString()
         })
-        .eq('id', user.id)
+        .eq('user_id', user.id)
+        .select()
+        .maybeSingle(); // ✅ Avoids PGRST116 error
 
       if (updateError) {
-        console.error('Error updating founder:', updateError)
+        console.error('[Onboarding Save Error]', updateError.message);
         setError('Failed to save your information. Please try again.')
         return
       }
 
+      if (!updateResult) {
+        console.warn('[Onboarding] Update returned no data - profile may not exist');
+        setError('Profile update failed. Please contact support.')
+        return
+      }
+
+      console.log('[Onboarding] Save successful, verifying profile...');
+
+      // 🔁 Verify the profile was saved using our safe fetch function
+      const fetchResult = await fetchFounderProfile(user.id);
+      if (!fetchResult.success) {
+        setError(fetchResult.error || 'Failed to verify profile save');
+        return;
+      }
+
+      console.log('[Onboarding] Profile verified, redirecting to dashboard...');
+      
+      // Small delay to ensure consistency before redirect
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
       // Redirect to dashboard
       router.push('/dashboard')
     } catch (error) {
-      console.error('Onboarding error:', error)
+      console.error('[Onboarding] Unexpected error:', error)
       setError('An unexpected error occurred. Please try again.')
     } finally {
       setIsSubmitting(false)
