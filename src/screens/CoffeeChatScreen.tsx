@@ -53,24 +53,20 @@ export default function CoffeeChatScreen() {
       // Fetch connections using proper RLS
       const { data, error } = await supabase
         .from('connections')
-        .select(`
-          *,
-          founder_profile:founders!connections_founder_b_fkey(id, full_name, company_name, avatar_url, role),
-          requester_profile:founders!connections_founder_a_fkey(id, full_name, company_name, avatar_url, role)
-        `)
-        .or(`founder_a.eq.${user.id},founder_b.eq.${user.id}`)
+        .select('*')
+        .or(`founder_a_id.eq.${user.id},founder_b_id.eq.${user.id}`)
         .eq('status', 'accepted');
 
       if (error) throw error;
 
       // Filter to get the other person in each connection
       const processedConnections = data.map(connection => {
-        const isRequester = connection.founder_a === user.id;
-        const otherProfile = isRequester ? connection.founder_profile : connection.requester_profile;
+        const isRequester = connection.founder_a_id === user.id;
+        const otherFounderId = isRequester ? connection.founder_b_id : connection.founder_a_id;
         
         return {
           ...connection,
-          other_founder: otherProfile,
+          other_founder: { id: otherFounderId },
         };
       });
 
@@ -85,12 +81,8 @@ export default function CoffeeChatScreen() {
     try {
       const { data, error } = await supabase
         .from('coffee_chats')
-        .select(`
-          *,
-          creator:founders!coffee_chats_creator_id_fkey(id, full_name, avatar_url, company_name),
-          target:founders!coffee_chats_target_user_id_fkey(id, full_name, avatar_url, company_name)
-        `)
-        .or(`creator_id.eq.${user.id},target_user_id.eq.${user.id}`)
+        .select('*')
+        .or(`requester_id.eq.${user.id},requested_id.eq.${user.id}`)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -109,7 +101,7 @@ export default function CoffeeChatScreen() {
       const { data, error } = await supabase
         .from('coffee_chats')
         .select('id, status, created_at')
-        .eq('creator_id', user.id)
+        .eq('requester_id', user.id)
         .in('status', ['pending', 'confirmed'])
         .gte('created_at', oneWeekAgo.toISOString());
 
@@ -130,10 +122,10 @@ export default function CoffeeChatScreen() {
       const { error } = await supabase
         .from('coffee_chats')
         .insert({
-          creator_id: user.id,
-          target_user_id: selectedConnection.other_founder.id,
-          message: requestForm.message.trim(),
-          time: requestForm.time,
+          requester_id: user.id,
+          requested_id: selectedConnection.other_founder.id,
+          requester_message: requestForm.message.trim(),
+          proposed_time: requestForm.time,
           location_or_link: requestForm.location_or_link,
           status: 'pending',
         });

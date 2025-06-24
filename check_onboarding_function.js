@@ -45,7 +45,7 @@ async function checkOnboardingFunction() {
       linkedin_url: 'https://linkedin.com/in/brandonthai',
       industry: 'Technology',
       location_city: 'San Francisco',
-      is_visible: true,
+      profile_visible: true,
       onboarding_complete: true,
       profile_progress: 100
     };

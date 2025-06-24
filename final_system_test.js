@@ -16,7 +16,7 @@ async function finalSystemTest() {
     
     const { data: schemaTest, error: schemaError } = await supabase
       .from('founders')
-      .select('id, email, full_name, onboarding_complete, is_visible, avatar_url, preferred_name, tags')
+      .select('id, email, full_name, onboarding_complete, profile_visible, avatar_url, preferred_name, tags')
       .limit(1);
     
     if (schemaError) {
@@ -47,7 +47,7 @@ async function finalSystemTest() {
       .from('founders')
       .select('*')
       .eq('email', testEmail)
-      .single();
+      .maybeSingle();
     
     if (userError) {
       console.log('❌ User profile fetch error:', userError.message);
@@ -72,7 +72,7 @@ async function finalSystemTest() {
       company_name: 'Test Company',
       bio: 'Testing the onboarding system.',
       tags: 'networking, testing, mobile',
-      is_visible: true,
+      profile_visible: true,
       avatar_url: null,
       onboarding_complete: true,
       updated_at: new Date().toISOString(),

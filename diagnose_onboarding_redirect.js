@@ -19,7 +19,7 @@ async function checkOnboardingRedirect() {
       .from('founders')
       .select('*')
       .eq('email', email)
-      .single();
+      .maybeSingle();
 
     if (userError) {
       console.error('❌ Error fetching user:', userError);
@@ -52,7 +52,7 @@ async function checkOnboardingRedirect() {
       .from('founders')
       .select('*')
       .eq('id', userData.id)
-      .single();
+      .maybeSingle();
       
     if (refreshError) {
       console.error('❌ Error refreshing user data:', refreshError);

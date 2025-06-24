@@ -154,7 +154,7 @@ export interface LocationShare {
   latitude: number;
   longitude: number;
   location_name?: string;
-  is_visible: boolean;
+  profile_visible: boolean;
   updated_at: string;
   // Add other fields based on your schema
 }

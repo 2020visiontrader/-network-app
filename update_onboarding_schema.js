@@ -36,7 +36,7 @@ async function updateFoundersSchema() {
     const columnsToAdd = [
       { name: 'location_city', type: 'text', current: 'location' },
       { name: 'tags_or_interests', type: 'text[]', current: 'tags' },
-      { name: 'profile_visible', type: 'boolean DEFAULT true', current: 'is_visible' },
+      { name: 'profile_visible', type: 'boolean DEFAULT true', current: 'profile_visible' },
       { name: 'onboarding_completed', type: 'boolean DEFAULT false', current: 'onboarding_complete' }
     ];
 

@@ -50,7 +50,7 @@ async function testAuthFunctions() {
       .from('founders')
       .select('id')
       .eq('id', mockUserId)
-      .single();
+      .maybeSingle();
 
     if (existingProfile) {
       console.log('⚠️ Test profile already exists, cleaning up...');
@@ -67,11 +67,11 @@ async function testAuthFunctions() {
         company_name: 'Test Company',
         role: 'Founder',
         onboarding_complete: false,
-        is_visible: true,
+        profile_visible: true,
         created_at: new Date().toISOString()
       })
       .select()
-      .single();
+      .maybeSingle();
 
     if (profileError) {
       console.error('❌ Profile creation failed:', profileError.message);
@@ -94,7 +94,7 @@ async function testAuthFunctions() {
         })
         .eq('id', mockUserId)
         .select()
-        .single();
+        .maybeSingle();
 
       if (updateError) {
         console.error('❌ Profile update failed:', updateError.message);

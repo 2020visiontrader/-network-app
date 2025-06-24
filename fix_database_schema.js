@@ -44,7 +44,7 @@ ALTER TABLE founders ADD COLUMN IF NOT EXISTS linkedin_url TEXT;
 ALTER TABLE founders ADD COLUMN IF NOT EXISTS company_name TEXT;
 ALTER TABLE founders ADD COLUMN IF NOT EXISTS bio TEXT;
 ALTER TABLE founders ADD COLUMN IF NOT EXISTS tags TEXT;
-ALTER TABLE founders ADD COLUMN IF NOT EXISTS is_visible BOOLEAN DEFAULT true;
+ALTER TABLE founders ADD COLUMN IF NOT EXISTS profile_visible BOOLEAN DEFAULT true;
 ALTER TABLE founders ADD COLUMN IF NOT EXISTS avatar_url TEXT;
 ALTER TABLE founders ADD COLUMN IF NOT EXISTS onboarding_complete BOOLEAN DEFAULT false;
 
@@ -133,7 +133,7 @@ async function testUserCreationAfterFix() {
           onboarding_complete: false,
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (profileError) {
         console.error('❌ Profile creation failed:', profileError.message);

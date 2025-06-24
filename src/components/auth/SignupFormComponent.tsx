@@ -93,7 +93,7 @@ export default function SignupFormComponent() {
         .from('founders')
         .select('id, is_active')
         .eq('email', formData.email)
-        .single()
+        .maybeSingle()
 
       if (existingFounder) {
         setError('A founder account with this email already exists. Please try logging in instead.')
@@ -105,7 +105,7 @@ export default function SignupFormComponent() {
         .from('founder_applications')
         .select('application_status')
         .eq('email', formData.email)
-        .single()
+        .maybeSingle()
 
       if (existingApplication) {
         if (existingApplication.application_status === 'pending') {

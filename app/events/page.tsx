@@ -49,7 +49,7 @@ export default function EventsPage() {
         .from('users')
         .select('city, niche_tags')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
       if (!userData) throw new Error('User data not found');
 

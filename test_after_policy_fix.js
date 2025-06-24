@@ -70,7 +70,7 @@ async function testAfterFix() {
       .from('founder_applications')
       .select('application_status')
       .eq('email', testEmail)
-      .single();
+      .maybeSingle();
     
     if (appError && appError.code === 'PGRST116') {
       console.log('✅ No existing application found (expected for new user)');
@@ -99,7 +99,7 @@ async function testAfterFix() {
       .from('founders')
       .select('id')
       .eq('id', testFounderId)
-      .single();
+      .maybeSingle();
     
     if (error && error.code === 'PGRST116') {
       console.log('✅ Founder lookup working (no founder found with test ID)');

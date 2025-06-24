@@ -16,7 +16,7 @@ export async function createUser(userData: UserInsert): Promise<UserRow | null> 
       .from('users')
       .insert(userData)
       .select()
-      .single()
+      .maybeSingle()
 
     if (error) {
       console.error('Error creating user:', error)
@@ -37,7 +37,7 @@ export async function updateUser(userId: string, updates: UserUpdate): Promise<U
       .update(updates)
       .eq('id', userId)
       .select()
-      .single()
+      .maybeSingle()
 
     if (error) {
       console.error('Error updating user:', error)
@@ -57,7 +57,7 @@ export async function getUserById(userId: string): Promise<UserRow | null> {
       .from('users')
       .select('*')
       .eq('id', userId)
-      .single()
+      .maybeSingle()
 
     if (error) {
       console.error('Error fetching user:', error)
@@ -217,7 +217,7 @@ export async function triggerReferralInvite(
       .from('users')
       .select('referral_code, name')
       .eq('id', referrerUserId)
-      .single()
+      .maybeSingle()
 
     if (referrerError || !referrer) {
       console.error('Error fetching referrer:', referrerError)

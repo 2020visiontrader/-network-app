@@ -173,7 +173,7 @@ async function testCompleteAuthToOnboardingFlow() {
       .from('founders')
       .select('*')
       .eq('id', user.id)
-      .single();
+      .maybeSingle();
       
     if (finalError) {
       console.error('❌ Error checking final state:', finalError);

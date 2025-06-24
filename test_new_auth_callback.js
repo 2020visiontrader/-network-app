@@ -35,7 +35,7 @@ async function testNewAuthCallback() {
       .from('founders')
       .select('*')
       .eq('id', mockUser.id)
-      .single();
+      .maybeSingle();
     
     if (findError && findError.code !== 'PGRST116') {
       console.log('❌ Error checking founders:', findError.message);
@@ -88,7 +88,7 @@ async function testNewAuthCallback() {
       .from('founders')
       .select('onboarding_completed')
       .eq('id', mockUser.id)
-      .single();
+      .maybeSingle();
     
     if (statusError) {
       console.log('❌ Error checking onboarding status:', statusError.message);
@@ -114,7 +114,7 @@ async function testNewAuthCallback() {
       .from('founders')
       .select('id, full_name, email, photo_url, onboarding_completed')
       .eq('id', mockUser.id)
-      .single();
+      .maybeSingle();
     
     if (error) {
       console.log('❌ Table structure error:', error.message);

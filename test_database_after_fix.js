@@ -19,7 +19,7 @@ async function testDatabaseAfterFix() {
     console.log('1️⃣ Testing table structure...');
     const { data: schemaTest, error: schemaError } = await supabase
       .from('founders')
-      .select('id, email, full_name, onboarding_complete, company_name, role, is_visible')
+      .select('id, email, full_name, onboarding_complete, company_name, role, profile_visible')
       .limit(1);
 
     if (schemaError) {
@@ -70,7 +70,7 @@ async function testDatabaseAfterFix() {
         .from('founders')
         .select('*')
         .eq('id', signUpData.user.id)
-        .single();
+        .maybeSingle();
 
       if (profileError) {
         console.error('❌ Profile not auto-created:', profileError.message);
@@ -84,10 +84,10 @@ async function testDatabaseAfterFix() {
             email: signUpData.user.email,
             full_name: 'Test User After Fix',
             onboarding_complete: false,
-            is_visible: true
+            profile_visible: true
           })
           .select()
-          .single();
+          .maybeSingle();
 
         if (manualError) {
           console.error('❌ Manual profile creation failed:', manualError.message);
@@ -114,7 +114,7 @@ async function testDatabaseAfterFix() {
         })
         .eq('id', signUpData.user.id)
         .select()
-        .single();
+        .maybeSingle();
 
       if (updateError) {
         console.error('❌ Profile update failed:', updateError.message);
@@ -128,8 +128,8 @@ async function testDatabaseAfterFix() {
     console.log('\n6️⃣ Testing public discovery...');
     const { data: discoveryData, error: discoveryError } = await supabase
       .from('founders')
-      .select('id, full_name, company_name, role, is_visible')
-      .eq('is_visible', true)
+      .select('id, full_name, company_name, role, profile_visible')
+      .eq('profile_visible', true)
       .limit(5);
 
     if (discoveryError) {

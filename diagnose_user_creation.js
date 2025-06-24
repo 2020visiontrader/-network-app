@@ -58,7 +58,7 @@ async function diagnoseUserCreation() {
                 .from('founders')
                 .select('*')
                 .eq('id', existingSignIn.user.id)
-                .single();
+                .maybeSingle();
                 
             if (existingFounderError) {
                 console.log('❌ Founder profile check failed:', existingFounderError.message);
@@ -135,7 +135,7 @@ async function diagnoseUserCreation() {
             .from('founders')
             .insert(founderData)
             .select()
-            .single();
+            .maybeSingle();
             
         if (founderError) {
             console.log('❌ Founder profile creation failed:', founderError.message);

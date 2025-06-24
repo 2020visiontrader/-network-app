@@ -59,7 +59,7 @@ export default function AgendaInput({ agendaBullets, onBulletsChange }: AgendaIn
       {/* Agenda Bullets */}
       <div className="space-y-4 mb-6">
         {agendaBullets.map((bullet, index) => (
-          <div key={index} className="relative">
+          <div key={`agenda-bullet-${index}`} className="relative">
             <div className="flex items-start space-x-3">
               <div className="flex-shrink-0 w-6 h-6 bg-amber-500/20 border border-amber-500/30 rounded-full flex items-center justify-center mt-2">
                 <span className="text-xs font-semibold text-amber-400">{index + 1}</span>
@@ -116,7 +116,7 @@ export default function AgendaInput({ agendaBullets, onBulletsChange }: AgendaIn
             <div className="grid grid-cols-1 gap-2">
               {suggestedTopics.map((topic, index) => (
                 <button
-                  key={index}
+                  key={`suggestion-${index}-${topic.substring(0, 20).replace(/\s+/g, '-')}`}
                   onClick={() => useSuggestion(topic)}
                   disabled={filledBullets >= 3}
                   className={`text-left p-3 rounded-lg text-sm transition ${
@@ -155,7 +155,7 @@ export default function AgendaInput({ agendaBullets, onBulletsChange }: AgendaIn
             {agendaBullets
               .filter(bullet => bullet.trim() !== '')
               .map((bullet, index) => (
-                <div key={index} className="flex items-start space-x-2 text-sm">
+                <div key={`preview-${index}-${bullet.substring(0, 10).replace(/\s+/g, '-')}`} className="flex items-start space-x-2 text-sm">
                   <span className="text-amber-400 mt-0.5">•</span>
                   <span className="text-gray-300">{bullet}</span>
                 </div>

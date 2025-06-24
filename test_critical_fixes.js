@@ -237,7 +237,7 @@ async function testCriticalFixes() {
         .from('founders')
         .select('id, user_id, email')
         .eq('user_id', authData.user.id)
-        .single();
+        .maybeSingle();
       
       if (founderError) {
         if (founderError.code === 'PGRST116') {

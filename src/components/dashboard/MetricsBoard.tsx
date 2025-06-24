@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { useApp } from '@/components/providers/AppProvider'
+import { dedupeBy, getUniqueConnections, getOtherFounderId } from '@/utils/dataUtils'
 
 interface NetworkMetrics {
   totalConnections: number
@@ -52,36 +53,63 @@ export default function MetricsBoard() {
     try {
       setIsLoading(true)
       setError('')
-
-      // Get total connections count
-      const { count: totalConnections } = await supabase
-        .from('users')
-        .select('*', { count: 'exact', head: true })
-        .neq('status', 'suspended')
-
-      // Get cities reached
-      const { data: citiesData } = await supabase
-        .from('users')
-        .select('city')
-        .not('city', 'is', null)
-
-      const uniqueCities = new Set(citiesData?.map(u => u.city).filter(Boolean))
-      const citiesReached = uniqueCities.size
-
-      // Get industry breakdown
-      const { data: usersData } = await supabase
-        .from('users')
-        .select('industries')
-        .not('industries', 'is', null)
-
-      const industryCount: { [key: string]: number } = {}
-      usersData?.forEach(user => {
-        if (user.industries && Array.isArray(user.industries)) {
-          user.industries.forEach((industry: string) => {
-            industryCount[industry] = (industryCount[industry] || 0) + 1
-          })
-        }
+      
+      // Clear existing data first
+      setMetrics({
+        totalConnections: 0,
+        verifiedConnections: 0,
+        citiesReached: 0,
+        topIndustry: '',
+        meetingsThisMonth: 0,
+        introductionsMade: 0,
+        growthPercentage: 0
       })
+
+      // Get user's connections (accepted only)
+      const { data: connectionsData, error: connectionsError } = await supabase
+        .from('connections')
+        .select('founder_a_id, founder_b_id, status')
+        .or(`founder_a_id.eq.${user.id},founder_b_id.eq.${user.id}`)
+        .eq('status', 'accepted')
+
+      if (connectionsError) throw connectionsError
+
+      // Deduplicate connections (avoid counting A->B and B->A twice)
+      const uniqueConnections = getUniqueConnections(connectionsData || [], user.id)
+      const totalConnections = uniqueConnections.length
+
+      // Get connected founder IDs
+      const connectedFounderIds = uniqueConnections.map(conn => 
+        getOtherFounderId(conn, user.id)
+      )
+
+      let citiesReached = 0
+      let industryCount: { [key: string]: number } = {}
+
+      if (connectedFounderIds.length > 0) {
+        // Get founder details for connected users only
+        const { data: foundersData, error: foundersError } = await supabase
+          .from('founders')
+          .select('location_city, industry')
+          .in('id', connectedFounderIds)
+
+        if (foundersError) throw foundersError
+
+        // Calculate unique cities (deduplicated)
+        const cities = foundersData
+          ?.map(f => f.location_city)
+          .filter(Boolean) || []
+        
+        const uniqueCities = [...new Set(cities)]
+        citiesReached = uniqueCities.length
+
+        // Calculate industry breakdown (deduplicated)
+        foundersData?.forEach(founder => {
+          if (founder.industry) {
+            industryCount[founder.industry] = (industryCount[founder.industry] || 0) + 1
+          }
+        })
+      }
 
       const topIndustries = Object.entries(industryCount)
         .sort(([,a], [,b]) => b - a)
@@ -92,44 +120,44 @@ export default function MetricsBoard() {
           color: ['bg-purple-500', 'bg-blue-500', 'bg-yellow-500', 'bg-green-500'][index] || 'bg-gray-500'
         }))
 
-      const topIndustry = topIndustries[0]?.name || 'Tech'
+      const topIndustry = topIndustries[0]?.name || 'None'
 
-      // Get meetings this month
+      // Get coffee chats this month (deduplicated)
       const startOfMonth = new Date()
       startOfMonth.setDate(1)
       startOfMonth.setHours(0, 0, 0, 0)
 
-      const { count: meetingsThisMonth } = await supabase
+      const { data: coffeeChatsData, error: coffeeError } = await supabase
         .from('coffee_chats')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id)
+        .select('id, requester_id, requested_id, created_at')
+        .or(`requester_id.eq.${user.id},requested_id.eq.${user.id}`)
         .gte('created_at', startOfMonth.toISOString())
 
-      // Get introductions made
-      const { count: introductionsMade } = await supabase
-        .from('introductions')
-        .select('*', { count: 'exact', head: true })
-        .eq('requester_id', user.id)
+      if (coffeeError) {
+        console.warn('Coffee chats table not found:', coffeeError)
+      }
 
-      // Calculate growth percentage (mock for now)
-      const growthPercentage = Math.floor(Math.random() * 50) + 10
+      const meetingsThisMonth = coffeeChatsData?.length || 0
 
+      // Update metrics state
       setMetrics({
-        totalConnections: totalConnections || 0,
-        verifiedConnections: Math.floor((totalConnections || 0) * 0.85),
+        totalConnections,
+        verifiedConnections: totalConnections, // All accepted connections are verified
         citiesReached,
         topIndustry,
-        meetingsThisMonth: meetingsThisMonth || 0,
-        introductionsMade: introductionsMade || 0,
-        growthPercentage
+        meetingsThisMonth,
+        introductionsMade: Math.floor(totalConnections * 0.3), // Estimate
+        growthPercentage: Math.floor(Math.random() * 50) + 10 // Mock growth
       })
 
       setIndustryData(topIndustries)
 
     } catch (error) {
       console.error('Error loading network metrics:', error)
-      setError('Failed to load metrics')
-      // Keep mock data as fallback
+      setError('Failed to load network metrics')
+      // Keep mock data on error
+      setMetrics(mockMetrics)
+      setIndustryData(mockIndustryData)
     } finally {
       setIsLoading(false)
     }
@@ -210,7 +238,7 @@ export default function MetricsBoard() {
             <h3 className="text-sm font-medium text-gray-300 mb-4">Monthly Growth</h3>
             <div className="h-32 flex items-end justify-between space-x-1">
               {[8, 12, 15, 18, 23, 27].map((value, index) => (
-                <div key={index} className="flex-1 flex flex-col items-center">
+                <div key={`growth-${index}-${value}`} className="flex-1 flex flex-col items-center">
                   <div
                     className="w-full bg-gradient-to-t from-purple-600 to-purple-400 rounded-t"
                     style={{ height: `${(value / 27) * 100}%` }}
@@ -250,13 +278,13 @@ export default function MetricsBoard() {
             <p className="text-sm text-gray-400">Top 15% of Network members</p>
           </div>
 
-          {/* Influence Factors */}
+          {/* Response Rate Metrics */}
           <div className="space-y-3">
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-300">Connection Quality</span>
               <div className="flex space-x-1">
                 {[1, 2, 3, 4, 5].map((star) => (
-                  <svg key={star} className="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                  <svg key={`star-${star}`} className="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                   </svg>
                 ))}
@@ -271,32 +299,8 @@ export default function MetricsBoard() {
               <span className="text-purple-400 font-semibold">12</span>
             </div>
           </div>
-
-          {/* Ambassador CTA */}
-          <div className="bg-gradient-to-r from-yellow-900/30 to-purple-900/30 border border-yellow-500/30 p-4 rounded-lg">
-            <h4 className="font-semibold text-yellow-400 mb-2">🌟 Ambassador Invitation</h4>
-            <p className="text-xs text-gray-300 mb-3">
-              Your high engagement qualifies you for our Ambassador program
-            </p>
-            <button
-              onClick={() => router.push('/ambassador')}
-              className="w-full bg-gradient-to-r from-yellow-500 to-purple-500 text-black font-semibold py-2 rounded-lg hover:shadow-lg transition"
-            >
-              Learn More
-            </button>
-          </div>
         </div>
       )}
-
-      {/* Action Button */}
-      <div className="mt-6 pt-6 border-t border-zinc-700">
-        <button
-          onClick={() => router.push('/contacts')}
-          className="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-3 rounded-lg transition shadow-lg hover:shadow-xl"
-        >
-          View Connection Map
-        </button>
-      </div>
     </div>
   )
 }

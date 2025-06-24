@@ -26,7 +26,7 @@ async function testDatabaseWithoutEmail() {
     console.log('\n2️⃣ Checking founders table structure...');
     const { data: structureTest, error: structureError } = await supabase
       .from('founders')
-      .select('id, email, full_name, onboarding_complete, company_name, role, is_visible')
+      .select('id, email, full_name, onboarding_complete, company_name, role, profile_visible')
       .limit(1);
 
     if (structureError) {
@@ -57,7 +57,7 @@ async function testDatabaseWithoutEmail() {
     const { data: publicData, error: publicError } = await supabase
       .from('founders')
       .select('id, full_name, company_name, role')
-      .eq('is_visible', true)
+      .eq('profile_visible', true)
       .limit(3);
 
     if (publicError) {

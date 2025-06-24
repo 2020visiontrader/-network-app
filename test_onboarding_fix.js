@@ -96,7 +96,7 @@ async function testOnboardingFix() {
       company_name: 'Network App',
       bio: 'Building the future of founder networking.',
       tags: 'networking, startups, AI',
-      is_visible: true,
+      profile_visible: true,
       avatar_url: null,
       onboarding_complete: true,
       updated_at: new Date().toISOString(),

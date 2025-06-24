@@ -4,8 +4,9 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '../../src/lib/supabase'
 import HiveHexGrid from '../../src/components/HiveHexGrid'
+import { FounderService } from '../../src/services/FounderService'
 
-interface OnboardingData {
+interface OnboardingFormData {
   full_name: string
   linkedin_url: string
   location_city: string
@@ -14,57 +15,14 @@ interface OnboardingData {
   profile_photo_url: string
 }
 
-// 🧠 Fetch founder profile with safe fallback handling
-async function fetchFounderProfile(userId: string) {
-  try {
-    console.log('[Founder Fetch] Attempting to fetch profile for user:', userId);
-    
-    const { data: founder, error } = await supabase
-      .from('founders')
-      .select('*')
-      .eq('user_id', userId)
-      .maybeSingle(); // ✅ Avoids throwing if no match is found
-
-    if (error) {
-      console.error('[Founder Fetch Error]', error.message);
-      return {
-        success: false,
-        error: 'We could not access your founder profile. Please try again or contact support.',
-        data: null
-      };
-    }
-
-    if (!founder) {
-      console.warn('[Founder Missing]', 'No profile found for user ID:', userId);
-      return {
-        success: false,
-        error: 'Your profile was saved but we could not verify the update. Please try again.',
-        data: null
-      };
-    }
-
-    console.log('[Founder Found]', founder);
-    return {
-      success: true,
-      error: null,
-      data: founder
-    };
-  } catch (e) {
-    console.error('[Unexpected Error]', e);
-    return {
-      success: false,
-      error: 'Something went wrong while loading your profile.',
-      data: null
-    };
-  }
-}
-
 export default function OnboardingPage() {
   const router = useRouter()
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState('')
 
-  const [formData, setFormData] = useState<OnboardingData>({
+  const [formData, setFormData] = useState<OnboardingFormData>({
     full_name: '',
     linkedin_url: '',
     location_city: '',
@@ -72,9 +30,6 @@ export default function OnboardingPage() {
     tagline: '',
     profile_photo_url: ''
   })
-
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [error, setError] = useState('')
 
   useEffect(() => {
     const checkUserAccess = async () => {
@@ -156,67 +111,51 @@ export default function OnboardingPage() {
     setIsSubmitting(true)
     setError('')
 
+    if (!user?.id) {
+      console.error('❌ No user ID found. Cannot submit onboarding.')
+      setError('Authentication error. Please refresh and try again.')
+      setIsSubmitting(false)
+      return
+    }
+
+    // Validate required fields
+    if (!formData.full_name || !formData.linkedin_url || !formData.location_city || !formData.industry || !formData.tagline) {
+      setError('Please fill in all required fields')
+      setIsSubmitting(false)
+      return
+    }
+
     try {
-      if (!user) {
-        setError('User not authenticated')
-        return
-      }
-
-      // Validate required fields
-      if (!formData.full_name || !formData.linkedin_url || !formData.location_city || !formData.industry || !formData.tagline) {
-        setError('Please fill in all required fields')
-        return
-      }
-
-      console.log('[Onboarding] Starting save process for user:', user.id);
-
-      // Update founders table with maybeSingle for safety
-      const { data: updateResult, error: updateError } = await supabase
-        .from('founders')
-        .update({
-          full_name: formData.full_name,
-          linkedin_url: formData.linkedin_url,
-          location_city: formData.location_city,
-          industry: formData.industry,
-          tagline: formData.tagline,
-          profile_photo_url: formData.profile_photo_url,
-          onboarding_completed: true,
-          updated_at: new Date().toISOString()
-        })
-        .eq('user_id', user.id)
-        .select()
-        .maybeSingle(); // ✅ Avoids PGRST116 error
-
-      if (updateError) {
-        console.error('[Onboarding Save Error]', updateError.message);
-        setError('Failed to save your information. Please try again.')
-        return
-      }
-
-      if (!updateResult) {
-        console.warn('[Onboarding] Update returned no data - profile may not exist');
-        setError('Profile update failed. Please contact support.')
-        return
-      }
-
-      console.log('[Onboarding] Save successful, verifying profile...');
-
-      // 🔁 Verify the profile was saved using our safe fetch function
-      const fetchResult = await fetchFounderProfile(user.id);
-      if (!fetchResult.success) {
-        setError(fetchResult.error || 'Failed to verify profile save');
-        return;
-      }
-
-      console.log('[Onboarding] Profile verified, redirecting to dashboard...');
+      console.log('✅ Starting onboarding for user:', user.id);
       
-      // Small delay to ensure consistency before redirect
-      await new Promise(resolve => setTimeout(resolve, 500));
+      const result = await FounderService.completeOnboarding(user.id, {
+        full_name: formData.full_name,
+        linkedin_url: formData.linkedin_url,
+        location_city: formData.location_city,
+        industry: formData.industry,
+        tagline: formData.tagline,
+        profile_photo_url: formData.profile_photo_url || null,
+        onboarding_completed: true
+      })
+
+      if (!result || !result.success) {
+        console.error('❌ Onboarding save failed', result?.error)
+        setError(result?.error || 'Failed to save your profile. Please try again.')
+        return
+      }
+
+      console.log('✅ Onboarding complete and verified:', result.data)
       
-      // Redirect to dashboard
-      router.push('/dashboard')
-    } catch (error) {
-      console.error('[Onboarding] Unexpected error:', error)
+      // ✅ Service already verified the write completed, safe to redirect
+      if (result.data?.id || result.data?.onboarding_completed) {
+        console.log('🎉 Profile verified! Redirecting to dashboard...')
+        router.push('/dashboard')
+      } else {
+        console.error('❌ Onboarding result missing required data')
+        setError('Profile saved but verification failed. Please refresh and try again.')
+      }
+    } catch (err) {
+      console.error('❌ Unexpected error during onboarding:', err)
       setError('An unexpected error occurred. Please try again.')
     } finally {
       setIsSubmitting(false)
@@ -317,8 +256,8 @@ export default function OnboardingPage() {
                 className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
               >
                 <option value="">Select your industry</option>
-                {niches.map(niche => (
-                  <option key={niche} value={niche}>{niche}</option>
+                {niches.map((niche, index) => (
+                  <option key={`niche-${index}-${niche}`} value={niche}>{niche}</option>
                 ))}
               </select>
             </div>

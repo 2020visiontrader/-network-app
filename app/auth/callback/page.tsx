@@ -32,9 +32,9 @@ export default function AuthCallbackPage() {
           .from('founders')
           .select('onboarding_completed, member_number')
           .eq('id', user.id)
-          .single()
+          .maybeSingle()
 
-        if (founderError && founderError.code !== 'PGRST116') {
+        if (founderError) {
           console.error('Error checking founder:', founderError)
           router.push('/login?error=database_error')
           return
@@ -66,7 +66,7 @@ export default function AuthCallbackPage() {
               onboarding_completed: false
             })
             .select('member_number')
-            .single()
+            .maybeSingle()
 
           if (insertError) {
             // Check if it's the 250 limit error

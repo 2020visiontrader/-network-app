@@ -92,7 +92,7 @@ async function testBackendTables() {
         application_status: 'pending'
       })
       .select()
-      .single();
+      .maybeSingle();
     
     if (error) {
       console.log('   ⚠️  Insert test error:', error.message);

@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { withAuth } from '@/components/withAuth';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import { Database } from '@/types/database.types';
 
 type Founder = any;
 type Connection = any;
@@ -32,8 +31,7 @@ const ContactsPage = () => {
     console.log("fetchContacts called");
   };
 
-  const supabase = createClientComponentClient<Database>();
-
+  const supabase = createClientComponentClient();
   const fetchConnections = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();

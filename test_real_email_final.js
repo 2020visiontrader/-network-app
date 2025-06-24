@@ -80,7 +80,7 @@ async function testRealEmailSignup() {
         .from('founders')
         .select('*')
         .eq('id', signUpData.user.id)
-        .single();
+        .maybeSingle();
 
       if (profileError) {
         console.log('❌ Profile fetch error:', profileError.message);
@@ -98,7 +98,7 @@ async function testRealEmailSignup() {
             onboarding_complete: false
           })
           .select()
-          .single();
+          .maybeSingle();
 
         if (createError) {
           console.log('❌ Manual profile creation error:', createError.message);

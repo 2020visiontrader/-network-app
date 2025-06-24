@@ -90,7 +90,7 @@ async function testMobileAppAuthFlow() {
         .from('founders')
         .select('*')
         .eq('id', userId)
-        .single();
+        .maybeSingle();
 
       if (fetchError && fetchError.code !== 'PGRST116') {
         console.log('❌ User data fetch error:', fetchError.message);

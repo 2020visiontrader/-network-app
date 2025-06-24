@@ -17,7 +17,7 @@ export default function Home() {
           .from('founders')
           .select('*')
           .eq('id', session.user.id)
-          .single();
+          .maybeSingle();
 
         if (!profile || !profile.full_name || !profile.niche_tags) {
           router.push('/onboarding');

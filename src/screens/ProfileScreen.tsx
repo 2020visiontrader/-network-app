@@ -29,7 +29,7 @@ const ProfileScreen = ({ navigation }) => {
     location: userData?.location || '',
     linkedin_url: userData?.linkedin_url || '',
     tags: userData?.tags || '',
-    is_visible: userData?.is_visible ?? true,
+    profile_visible: userData?.profile_visible ?? true,
   });
 
   useEffect(() => {
@@ -43,7 +43,7 @@ const ProfileScreen = ({ navigation }) => {
         location: userData.location || '',
         linkedin_url: userData.linkedin_url || '',
         tags: userData.tags || '',
-        is_visible: userData.is_visible ?? true,
+        profile_visible: userData.profile_visible ?? true,
       });
       setProfileImage(userData.avatar_url);
     }
@@ -262,13 +262,13 @@ const ProfileScreen = ({ navigation }) => {
           <Text style={styles.label}>Profile Visibility</Text>
           <TouchableOpacity
             style={styles.toggleContainer}
-            onPress={() => editing && setProfile(prev => ({ ...prev, is_visible: !prev.is_visible }))}
+            onPress={() => editing && setProfile(prev => ({ ...prev, profile_visible: !prev.profile_visible }))}
           >
-            <View style={[styles.toggle, profile.is_visible && styles.toggleActive]}>
-              <View style={[styles.toggleDot, profile.is_visible && styles.toggleDotActive]} />
+            <View style={[styles.toggle, profile.profile_visible && styles.toggleActive]}>
+              <View style={[styles.toggleDot, profile.profile_visible && styles.toggleDotActive]} />
             </View>
             <Text style={styles.toggleText}>
-              {profile.is_visible ? 'Visible to other founders' : 'Hidden from discovery'}
+              {profile.profile_visible ? 'Visible to other founders' : 'Hidden from discovery'}
             </Text>
           </TouchableOpacity>
         </View>

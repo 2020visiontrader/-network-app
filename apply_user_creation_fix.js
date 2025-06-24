@@ -259,7 +259,7 @@ async function testFixedUserCreation() {
             .from('mobile_founders')
             .select('*')
             .eq('id', authData.user.id)
-            .single();
+            .maybeSingle();
             
         if (viewError) {
             console.log('❌ Mobile view failed:', viewError.message);

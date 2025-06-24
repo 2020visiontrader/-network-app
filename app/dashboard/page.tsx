@@ -2,11 +2,11 @@
 
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuthGuard } from '@/hooks/useAuth';
-import HiveHexGrid from '@/components/HiveHexGrid';
-import { WelcomeCard, HiveFeed, MetricsBoard, ActionGrid } from '@/components/dashboard';
-import { useApp } from '@/components/providers/AppProvider';
-import { supabase } from '@/lib/supabase';
+import HiveHexGrid from '../../src/components/HiveHexGrid';
+import { WelcomeCard, HiveFeed, MetricsBoard, ActionGrid } from '../../src/components/dashboard';
+import { useApp } from '../../src/components/providers/AppProvider';
+import { supabase } from '../../src/lib/supabase';
+import { fetchWithRetry, measureDbOperation, logRaceConditionDiagnostics } from '../../src/lib/db-utils';
 
 interface DashboardUser {
   id: string;
@@ -38,7 +38,15 @@ function DashboardContent() {
   const loadUserData = async () => {
     try {
       setIsLoading(true);
-      setError('');
+      // Log the start of dashboard data loading with timestamp
+      console.log(`🔄 Dashboard data loading started at ${new Date().toISOString()}`, {
+        userId: appUser?.id
+      });
+      
+      // Log the start of dashboard data loading with timestamp
+      console.log(`🔄 Dashboard data loading started at ${new Date().toISOString()}`, {
+        userId: appUser?.id
+      });
 
       // Check if user is logged in
       if (!appUser) {
@@ -52,53 +60,86 @@ function DashboardContent() {
         return;
       }
 
-      // Get complete founder data from Supabase
-      const { data: founderData, error: founderError } = await supabase
-        .from('founders')
-        .select(`
-          id,
-          email,
-          full_name,
-          company_name,
-          role,
-          location_city,
-          industry,
-          onboarding_completed,
-          is_verified,
-          member_number,
-          created_at
-        `)
-        .eq('id', appUser.id)
-        .single();
+      // Use measureDbOperation to track performance
+      await measureDbOperation('dashboard-loadUserData', async () => {
+        // Use our new fetchWithRetry utility with improved logging
+        const { data: founderData, success, attempts, timeTaken, error: fetchError } = await fetchWithRetry(
+          supabase,
+          'founders',
+          'id',
+          appUser.id,
+          `
+            id,
+            email,
+            full_name,
+            company_name,
+            role,
+            location_city,
+            industry,
+            onboarding_completed,
+            is_verified,
+            member_number,
+            created_at
+          `,
+          {
+            maxRetries: 3,
+            retryDelay: 1000,
+            logPrefix: '🔄 Dashboard Profile Fetch'
+          }
+        );
 
-      if (founderError) {
-        console.error('Error loading founder data:', founderError);
-        setError('Failed to load founder data');
-        return;
-      }
+        if (fetchError) {
+          console.error('Error loading founder data:', fetchError);
+          setError('Failed to load founder data');
+          return;
+        }
 
-      if (!founderData) {
-        setError('Founder data not found');
-        return;
-      }
+        if (!founderData) {
+          console.error('❌ Founder data not found after multiple attempts', { 
+            attempts, 
+            timeTaken,
+            userId: appUser.id,
+            timestamp: new Date().toISOString(),
+            // Log additional diagnostic information
+            retryPattern: `${attempts} attempts over ${timeTaken}ms`,
+            errorType: 'DATA_NOT_FOUND_AFTER_RETRIES'
+          });
+          setError('Founder data not found. Please complete onboarding first.');
+          return;
+        }
 
-      // Convert to dashboard user format
-      setUser({
-        id: founderData.id,
-        email: founderData.email,
-        full_name: founderData.full_name,
-        preferred_name: founderData.full_name.split(' ')[0], // First name as preferred
-        role: founderData.is_verified ? 'verified_founder' : 'pending_founder',
-        city: founderData.location_city || 'Location not set',
-        industries: founderData.industry ? [founderData.industry] : [],
-        hobbies: [],
-        profile_progress: founderData.onboarding_completed ? 100 : 50,
-        is_ambassador: false,
-        created_at: founderData.created_at,
-        company_name: founderData.company_name,
-        member_number: founderData.member_number
+        // Enhanced success logging with more detailed information
+        console.log('✅ Founder data loaded successfully', { 
+          attempts, 
+          timeTaken,
+          userId: appUser.id,
+          onboardingCompleted: founderData.onboarding_completed,
+          timestamp: new Date().toISOString(),
+          // Track if retries were needed or if first attempt succeeded
+          requiredRetries: attempts > 1,
+          // This helps identify potential race conditions
+          possibleRaceCondition: attempts > 1 ? 'Yes - needed retries' : 'No - first attempt succeeded',
+          // Performance categorization
+          performance: timeTaken < 500 ? 'Fast' : timeTaken < 2000 ? 'Normal' : 'Slow'
+        });
+
+        // Convert to dashboard user format
+        setUser({
+          id: founderData.id,
+          email: founderData.email,
+          full_name: founderData.full_name,
+          preferred_name: founderData.full_name.split(' ')[0], // First name as preferred
+          role: founderData.is_verified ? 'verified_founder' : 'pending_founder',
+          city: founderData.location_city || 'Location not set',
+          industries: founderData.industry ? [founderData.industry] : [],
+          hobbies: [],
+          profile_progress: founderData.onboarding_completed ? 100 : 50,
+          is_ambassador: false,
+          created_at: founderData.created_at,
+          company_name: founderData.company_name,
+          member_number: founderData.member_number
+        });
       });
-
     } catch (error) {
       console.error('Error in loadUserData:', error);
       setError('Failed to load dashboard data');
@@ -170,6 +211,69 @@ function DashboardContent() {
 
         {/* Welcome Card */}
         <WelcomeCard user={user} />
+
+        {/* Network Summary Bar */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div 
+            className="bg-zinc-900/70 border border-zinc-800 p-4 rounded-xl backdrop-blur-sm cursor-pointer hover:border-purple-500/50 transition-all"
+            onClick={() => router.push('/contacts')}
+          >
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-purple-600/20 rounded-lg flex items-center justify-center">
+                <span className="text-purple-400">🤝</span>
+              </div>
+              <div>
+                <div className="text-lg font-bold text-white">27</div>
+                <div className="text-xs text-gray-400">Connections</div>
+              </div>
+            </div>
+          </div>
+          
+          <div 
+            className="bg-zinc-900/70 border border-zinc-800 p-4 rounded-xl backdrop-blur-sm cursor-pointer hover:border-yellow-500/50 transition-all"
+            onClick={() => router.push('/coffee-chats')}
+          >
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-yellow-600/20 rounded-lg flex items-center justify-center">
+                <span className="text-yellow-400">☕</span>
+              </div>
+              <div>
+                <div className="text-lg font-bold text-white">3</div>
+                <div className="text-xs text-gray-400">Coffee Chats</div>
+              </div>
+            </div>
+          </div>
+          
+          <div 
+            className="bg-zinc-900/70 border border-zinc-800 p-4 rounded-xl backdrop-blur-sm cursor-pointer hover:border-blue-500/50 transition-all"
+            onClick={() => router.push('/events')}
+          >
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-blue-600/20 rounded-lg flex items-center justify-center">
+                <span className="text-blue-400">🎤</span>
+              </div>
+              <div>
+                <div className="text-lg font-bold text-white">2</div>
+                <div className="text-xs text-gray-400">Events RSVPs</div>
+              </div>
+            </div>
+          </div>
+          
+          <div 
+            className="bg-zinc-900/70 border border-zinc-800 p-4 rounded-xl backdrop-blur-sm cursor-pointer hover:border-green-500/50 transition-all"
+            onClick={() => router.push('/mastermind')}
+          >
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-green-600/20 rounded-lg flex items-center justify-center">
+                <span className="text-green-400">🧬</span>
+              </div>
+              <div>
+                <div className="text-lg font-bold text-white">1</div>
+                <div className="text-xs text-gray-400">Masterminds</div>
+              </div>
+            </div>
+          </div>
+        </div>
 
         {/* Main Dashboard Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

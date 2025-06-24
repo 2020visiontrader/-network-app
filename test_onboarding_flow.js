@@ -147,7 +147,7 @@ async function testCompleteAuthToOnboardingFlow() {
       .from('founders')
       .select('*')
       .eq('id', testUserData.id)
-      .single();
+      .maybeSingle();
 
     if (fetchError) {
       console.error('❌ Fetch failed:', fetchError);

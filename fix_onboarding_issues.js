@@ -23,7 +23,7 @@ async function fixOnboardingIssues() {
       .from('founders')
       .select('*')
       .eq('email', testEmail)
-      .single();
+      .maybeSingle();
     
     if (fetchError) {
       console.log('❌ Error fetching user:', fetchError.message);
@@ -42,7 +42,7 @@ async function fixOnboardingIssues() {
       company_name: 'Network App',
       bio: 'Building the future of founder networking.',
       tags: 'networking, startups, AI',
-      is_visible: true,
+      profile_visible: true,
       avatar_url: null, // No image upload for now
       onboarding_complete: true,
       updated_at: new Date().toISOString(),

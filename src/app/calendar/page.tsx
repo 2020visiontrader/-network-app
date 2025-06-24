@@ -285,7 +285,7 @@ export default function CalendarPage() {
           <div className="grid grid-cols-7 gap-1">
             {getDaysInMonth().map((day, index) => {
               if (day === null) {
-                return <div key={index} className="h-12"></div>;
+                return <div key={`empty-${index}`} className="h-12"></div>;
               }
 
               const dayEvents = getEventsForDate(day);
@@ -305,7 +305,7 @@ export default function CalendarPage() {
                     <div className="font-medium">{day}</div>
                     <div className="flex justify-center space-x-1 mt-1">
                       {dayEvents.slice(0, 3).map((event, i) => (
-                        <span key={i} className="text-xs">
+                        <span key={`event-${day}-${i}-${event.id}`} className="text-xs">
                           {event.icon}
                         </span>
                       ))}

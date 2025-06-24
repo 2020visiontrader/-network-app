@@ -61,7 +61,7 @@ async function testUserCreation() {
         onboarding_completed: false
       })
       .select()
-      .single();
+      .maybeSingle();
     
     if (founderError) {
       console.log('❌ Founder creation failed:', founderError.message);
@@ -78,7 +78,7 @@ async function testUserCreation() {
       .from('founders')
       .select('*')
       .eq('id', authData.user.id)
-      .single();
+      .maybeSingle();
     
     if (retrieveError) {
       console.log('❌ Founder retrieval failed:', retrieveError.message);

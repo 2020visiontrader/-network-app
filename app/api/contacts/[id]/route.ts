@@ -22,7 +22,7 @@ export async function PUT(
       .eq('id', params.id)
       .eq('owner_id', user.id)
       .select()
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
 

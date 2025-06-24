@@ -19,7 +19,7 @@ async function testOnboardingCompletion() {
       .from('founders')
       .select('*')
       .eq('email', testEmail)
-      .single();
+      .maybeSingle();
     
     if (fetchError) {
       console.log('❌ Error fetching user:', fetchError.message);
@@ -43,7 +43,7 @@ async function testOnboardingCompletion() {
       company_name: 'Network App',
       bio: 'Building the future of founder networking.',
       tags: 'networking, startups, AI',
-      is_visible: true,
+      profile_visible: true,
       avatar_url: null,
       onboarding_complete: true,
       updated_at: new Date().toISOString(),
@@ -76,7 +76,7 @@ async function testOnboardingCompletion() {
     
     const requiredFields = [
       'full_name', 'preferred_name', 'role', 'location', 'linkedin_url', 
-      'company_name', 'bio', 'tags', 'is_visible', 'avatar_url', 
+      'company_name', 'bio', 'tags', 'profile_visible', 'avatar_url', 
       'onboarding_complete'
     ];
     

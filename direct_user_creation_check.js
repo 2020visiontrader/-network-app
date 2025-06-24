@@ -121,7 +121,7 @@ async function checkUserCreationIssues() {
             .from('founders')
             .insert(minimalData)
             .select()
-            .single();
+            .maybeSingle();
             
         if (founderError) {
             console.log('❌ Minimal founder creation failed:', founderError.message);
@@ -154,7 +154,7 @@ async function checkUserCreationIssues() {
                     .from('founders')
                     .insert(extendedData)
                     .select()
-                    .single();
+                    .maybeSingle();
                     
                 if (extendedError) {
                     console.log('❌ Extended founder creation failed:', extendedError.message);

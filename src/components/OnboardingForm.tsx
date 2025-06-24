@@ -90,57 +90,29 @@ export default function OnboardingForm({ onComplete }) {
         return;
       }
 
-      console.log('Profile operation successful:', result.data);
+      console.log('✅ Profile operation successful and verified:', result.data);
       
-      // Re-fetch founder profile to confirm onboarding_completed is set
-      let founderId = user.id;
-      let founder = null;
-      let retryCount = 0;
-      const maxRetries = 1;
-      
-      while (!founder && retryCount <= maxRetries) {
-        // Refresh user data first
+      // ✅ Service already verified the write completed, safe to navigate
+      if (result.data?.id || result.data?.onboarding_completed) {
+        // Refresh user data to trigger app-level navigation updates
         await refreshUserData();
         
-        // Get the founder record directly
-        const founderResult = await FounderService.getFounder(founderId);
-        
-        if (founderResult.success && founderResult.data) {
-          founder = founderResult.data;
-          console.log('Retrieved founder profile:', founder);
-          
-          // Check if onboarding is marked as completed
-          if (!founder.onboarding_completed) {
-            console.log('WARNING: onboarding_completed not set in founder record, forcing update');
-            
-            // Force an update to set onboarding_completed = true
-            const updateResult = await FounderService.updateFounder(founderId, {
-              onboarding_completed: true,
-              profile_progress: 100
-            });
-            
-            console.log('Manual update of onboarding status:', updateResult);
-            
-            // Refresh user data and founder record again
-            await refreshUserData();
-            const refreshedResult = await FounderService.getFounder(founderId);
-            if (refreshedResult.success) {
-              founder = refreshedResult.data;
+        // Show success message before navigation
+        Alert.alert(
+          'Success!', 
+          'Your profile has been set up successfully. Welcome to NETWORK!',
+          [
+            {
+              text: 'Continue to Dashboard',
+              onPress: async () => {
+                // Navigate to Dashboard
+                navigateToDashboard();
+              }
             }
-          }
-        } else {
-          console.log(`Attempt ${retryCount + 1}: Failed to retrieve founder profile, will ${retryCount < maxRetries ? 'retry' : 'abort'}`);
-          retryCount++;
-          
-          if (retryCount <= maxRetries) {
-            // Wait before retrying
-            await new Promise(resolve => setTimeout(resolve, 1000));
-          }
-        }
-      }
-      
-      if (!founder) {
-        console.error('Failed to retrieve founder profile after maximum retries');
+          ]
+        );
+      } else {
+        console.error('❌ Onboarding result missing required data');
         Alert.alert(
           'Profile Update Error',
           'Your profile was saved but we could not verify the update. Please try again or contact support.',
@@ -148,21 +120,6 @@ export default function OnboardingForm({ onComplete }) {
         );
         return;
       }
-
-      // Show success message before navigation
-      Alert.alert(
-        'Success!', 
-        'Your profile has been set up successfully. Welcome to NETWORK!',
-        [
-          {
-            text: 'Continue to Dashboard',
-            onPress: async () => {
-              // Navigate to Dashboard
-              navigateToDashboard();
-            }
-          }
-        ]
-      );
 
     } catch (error) {
       console.error('Error completing onboarding:', error);

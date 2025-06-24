@@ -47,7 +47,7 @@ async function checkCurrentDatabaseState() {
     // Check which required columns are missing
     const requiredColumns = [
       'id', 'email', 'full_name', 'onboarding_complete', 
-      'company_name', 'role', 'is_visible', 'preferred_name',
+      'company_name', 'role', 'profile_visible', 'preferred_name',
       'location', 'bio', 'avatar_url'
     ];
 

@@ -29,7 +29,7 @@ async function quickMobileAppTest() {
       .from('founders')
       .select('id, email, full_name, onboarding_complete')
       .eq('email', 'hellonetworkapp@gmail.com')
-      .single();
+      .maybeSingle();
     
     if (testUser) {
       console.log('✅ Test user ready:', testUser.email);

@@ -80,13 +80,14 @@ export class DatabaseHealthCheck {
         .from('founders')
         .select('onboarding_completed, profile_progress')
         .eq('id', userId)
-        .single();
+        .maybeSingle();
 
       if (error) {
-        if (error.code === 'PGRST116') {
-          return { status: 'no_profile', message: 'User profile not found' };
-        }
         throw error;
+      }
+
+      if (!data) {
+        return { status: 'no_profile', message: 'User profile not found' };
       }
 
       return {

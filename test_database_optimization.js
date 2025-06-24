@@ -17,7 +17,7 @@ async function testDatabaseOptimization() {
     // Test basic select access
     const { data: testSelect, error: selectError } = await supabase
       .from('founders')
-      .select('id, email, is_visible')
+      .select('id, email, profile_visible')
       .limit(1);
     
     if (selectError) {
@@ -31,7 +31,7 @@ async function testDatabaseOptimization() {
     
     const { data: columnTest, error: columnError } = await supabase
       .from('founders')
-      .select('id, email, full_name, preferred_name, is_visible, avatar_url, tags, linkedin_url, bio, onboarding_complete')
+      .select('id, email, full_name, preferred_name, profile_visible, avatar_url, tags, linkedin_url, bio, onboarding_complete')
       .limit(1);
     
     if (columnError) {
@@ -50,7 +50,7 @@ async function testDatabaseOptimization() {
       .from('founders')
       .select('*')
       .eq('email', 'hellonetworkapp@gmail.com')
-      .single();
+      .maybeSingle();
     
     if (userError) {
       console.log('❌ User profile access error:', userError.message);
@@ -58,7 +58,7 @@ async function testDatabaseOptimization() {
       console.log('✅ User profile accessible');
       console.log('   - Email:', userProfile.email);
       console.log('   - Onboarding complete:', userProfile.onboarding_complete);
-      console.log('   - Visible:', userProfile.is_visible);
+      console.log('   - Visible:', userProfile.profile_visible);
       console.log('   - Has LinkedIn URL:', !!userProfile.linkedin_url);
       console.log('   - Has bio:', !!userProfile.bio);
     }

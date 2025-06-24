@@ -16,7 +16,7 @@ export async function GET() {
       .from('users')
       .select('*')
       .eq('id', authUser.id)
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
 
@@ -43,7 +43,7 @@ export async function PUT(request: Request) {
       .update(updates)
       .eq('id', authUser.id)
       .select()
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
 

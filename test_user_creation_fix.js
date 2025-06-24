@@ -67,7 +67,7 @@ async function testUserCreationFix() {
             .from('founders')
             .insert(mobileAppData)
             .select()
-            .single();
+            .maybeSingle();
             
         if (founderError) {
             console.log('❌ Mobile app style creation failed:', founderError.message);
@@ -105,7 +105,7 @@ async function testUserCreationFix() {
             .from('mobile_founders')
             .select('*')
             .eq('id', userId)
-            .single();
+            .maybeSingle();
             
         if (viewError) {
             console.log('❌ Mobile view access failed:', viewError.message);
@@ -136,7 +136,7 @@ async function testUserCreationFix() {
                 .from('mobile_founders')
                 .select('*')
                 .eq('id', signInData.user.id)
-                .single();
+                .maybeSingle();
                 
             if (profileError) {
                 console.log('❌ Profile access failed:', profileError.message);

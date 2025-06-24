@@ -20,26 +20,26 @@ const actionCards: ActionCard[] = [
     icon: '🧬',
     color: 'from-purple-600 to-purple-800',
     action: 'Create Group',
-    route: '/masterminds',
+    route: '/mastermind',
     badge: 'Popular'
   },
   {
-    id: 'find-events',
-    title: 'Find Events',
-    description: 'Discover networking events and conferences in your area',
-    icon: '🎤',
-    color: 'from-blue-600 to-blue-800',
-    action: 'Browse Events',
-    route: '/events'
-  },
-  {
-    id: 'book-chat',
-    title: 'Book Coffee Chat',
-    description: 'Schedule 1:1 meetings with interesting connections',
+    id: 'start-coffee-chat',
+    title: 'Start Coffee Chat',
+    description: 'Schedule 1:1 meetings with your connections',
     icon: '☕',
     color: 'from-yellow-600 to-yellow-800',
-    action: 'Find People',
+    action: 'Schedule Meeting',
     route: '/coffee-chats'
+  },
+  {
+    id: 'create-event',
+    title: 'Create Event',
+    description: 'Host networking events and conferences',
+    icon: '🎤',
+    color: 'from-blue-600 to-blue-800',
+    action: 'Host Event',
+    route: '/events/create'
   },
   {
     id: 'invite-others',
@@ -50,24 +50,6 @@ const actionCards: ActionCard[] = [
     action: 'Send Invites',
     route: '/ambassador',
     badge: 'Earn $50'
-  },
-  {
-    id: 'travel-mode',
-    title: 'Travel Mode',
-    description: 'Connect with locals and travelers in your destination',
-    icon: '✈️',
-    color: 'from-indigo-600 to-indigo-800',
-    action: 'Set Location',
-    route: '/travel'
-  },
-  {
-    id: 'skill-share',
-    title: 'Skill Share',
-    description: 'Offer mentorship or learn from experts in your field',
-    icon: '🎯',
-    color: 'from-pink-600 to-pink-800',
-    action: 'Get Started',
-    route: '/introductions'
   }
 ]
 
@@ -82,15 +64,15 @@ export default function ActionGrid() {
     <div className="bg-zinc-900/70 border border-zinc-800 p-6 rounded-2xl shadow-xl backdrop-blur-sm">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-semibold text-purple-400 flex items-center space-x-2">
-          <span>🛠️</span>
-          <span>Quick Actions</span>
+          <span>⚡</span>
+          <span>Create & Host</span>
         </h2>
         <button className="text-sm text-gray-400 hover:text-white transition">
           Customize
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {actionCards.map((card) => (
           <div
             key={card.id}

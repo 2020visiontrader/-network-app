@@ -23,7 +23,7 @@ export default function HomePage() {
             .from('founders')
             .select('is_verified, is_active, onboarding_completed, onboarding_step')
             .eq('id', session.user.id)
-            .single()
+            .maybeSingle()
 
           if (founderData) {
             // User exists in founders table

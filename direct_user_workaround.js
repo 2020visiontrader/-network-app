@@ -69,7 +69,7 @@ async function directUserCreationTest() {
             .from('founders')
             .insert(existingSchemaData)
             .select()
-            .single();
+            .maybeSingle();
             
         if (founderError) {
             console.log('❌ Founder creation failed:', founderError.message);
@@ -88,7 +88,7 @@ async function directUserCreationTest() {
                 .from('founders')
                 .insert(minimalData)
                 .select()
-                .single();
+                .maybeSingle();
                 
             if (minimalError) {
                 console.log('❌ Minimal creation failed:', minimalError.message);
@@ -122,7 +122,7 @@ async function directUserCreationTest() {
                 .from('founders')
                 .select('*')
                 .eq('id', signInData.user.id)
-                .single();
+                .maybeSingle();
                 
             if (profileError) {
                 console.log('❌ Profile read failed:', profileError.message);

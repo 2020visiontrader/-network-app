@@ -121,7 +121,7 @@ async function testAuthFlow() {
       .from('founders')
       .select('*')
       .eq('user_id', userId)
-      .single();
+      .maybeSingle();
       
     if (updatedError) {
       console.error('❌ Error fetching updated record:', updatedError.message);
@@ -176,7 +176,7 @@ async function testAuthFlow() {
         .from('founders')
         .select('id, user_id, email, full_name')
         .eq('user_id', signInData.user.id)
-        .single();
+        .maybeSingle();
         
       if (finalError) {
         console.error('❌ Final check failed:', finalError.message);

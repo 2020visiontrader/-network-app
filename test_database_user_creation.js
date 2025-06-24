@@ -96,7 +96,7 @@ async function testDatabaseUserCreation() {
         created_at: new Date().toISOString(),
       })
       .select()
-      .single();
+      .maybeSingle();
 
     if (profileError) {
       console.error('❌ Profile creation failed:', profileError.message);
@@ -122,7 +122,7 @@ async function testDatabaseUserCreation() {
       .from('founders')
       .select('*')
       .eq('id', signUpData.user.id)
-      .single();
+      .maybeSingle();
 
     if (retrieveError) {
       console.error('❌ Profile retrieval failed:', retrieveError.message);

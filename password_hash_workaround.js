@@ -72,7 +72,7 @@ async function fixPasswordHashIssue() {
             .from('founders')
             .insert(workaroundData)
             .select()
-            .single();
+            .maybeSingle();
             
         if (founderError) {
             console.log('❌ Founder creation failed:', founderError.message);
@@ -104,7 +104,7 @@ async function fixPasswordHashIssue() {
                 .from('founders')
                 .select('id, email, full_name, bio, location, company_name, role, industry, is_active')
                 .eq('id', signInData.user.id)
-                .single();
+                .maybeSingle();
                 
             if (profileError) {
                 console.log('❌ Profile access failed:', profileError.message);
@@ -129,7 +129,7 @@ async function fixPasswordHashIssue() {
                 })
                 .eq('id', signInData.user.id)
                 .select()
-                .single();
+                .maybeSingle();
                 
             if (updateError) {
                 console.log('❌ Avatar update failed:', updateError.message);

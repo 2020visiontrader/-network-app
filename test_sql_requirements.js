@@ -33,7 +33,7 @@ async function testSQLExecution() {
       const columns = Object.keys(tableData[0]);
       console.log('✅ Current columns:', columns.length);
       
-      const requiredColumns = ['preferred_name', 'is_visible', 'avatar_url', 'tags'];
+      const requiredColumns = ['preferred_name', 'profile_visible', 'avatar_url', 'tags'];
       const missingColumns = requiredColumns.filter(col => !columns.includes(col));
       
       if (missingColumns.length > 0) {

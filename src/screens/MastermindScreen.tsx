@@ -39,18 +39,18 @@ export default function MastermindScreen() {
     try {
       const { data, error } = await supabase
         .from('connections')
-        .select('founder_a, founder_b')
-        .or(`founder_a.eq.${user.id},founder_b.eq.${user.id}`)
+        .select('founder_a_id, founder_b_id')
+        .or(`founder_a_id.eq.${user.id},founder_b_id.eq.${user.id}`)
         .eq('status', 'accepted');
 
       if (error) throw error;
 
       const connectedIds = new Set();
       data?.forEach(conn => {
-        if (conn.founder_a === user.id) {
-          connectedIds.add(conn.founder_b);
+        if (conn.founder_a_id === user.id) {
+          connectedIds.add(conn.founder_b_id);
         } else {
-          connectedIds.add(conn.founder_a);
+          connectedIds.add(conn.founder_a_id);
         }
       });
       connectedIds.add(user.id); // Include self
@@ -62,14 +62,15 @@ export default function MastermindScreen() {
 
   const fetchMasterminds = async () => {
     try {
+      // TODO: Enable when masterminds table is created
+      console.log('⏳ Masterminds feature coming soon...');
+      setMasterminds([]);
+      return;
+      
       // Fetch all masterminds
       const { data: mastermindsData, error: mastermindsError } = await supabase
         .from('masterminds')
-        .select(`
-          *,
-          host:founders(id, full_name, company_name)
-        `)
-        .eq('status', 'active')
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (mastermindsError) throw mastermindsError;
@@ -139,12 +140,12 @@ export default function MastermindScreen() {
       const { error } = await supabase
         .from('masterminds')
         .insert({
-          title: newMastermind.title.trim(),
+          topic: newMastermind.title.trim(),
           description: newMastermind.description.trim(),
           max_members: newMastermind.max_members ? parseInt(newMastermind.max_members) : null,
-          meeting_info: newMastermind.meeting_info.trim(),
+          location: newMastermind.meeting_info.trim(),
           host_id: user.id,
-          status: 'active',
+          time: new Date().toISOString(), // Add required time field
         });
 
       if (error) throw error;

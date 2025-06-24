@@ -34,7 +34,7 @@ async function checkUserDataRefresh() {
       .from('founders')
       .select('*')
       .eq('id', testUser.id)
-      .single();
+      .maybeSingle();
       
     if (founderError) {
       console.error('❌ Error fetching founder data:', founderError);

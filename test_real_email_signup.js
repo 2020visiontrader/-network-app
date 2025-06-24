@@ -15,7 +15,7 @@ async function testRealEmailSignup() {
       .from('founders')
       .select('id, email, full_name')
       .eq('email', 'hellonetworkapp@gmail.com')
-      .single();
+      .maybeSingle();
 
     if (existingUser) {
       console.log('👤 User already exists:', existingUser);
@@ -46,7 +46,7 @@ async function testRealEmailSignup() {
           .from('founders')
           .select('*')
           .eq('email', 'hellonetworkapp@gmail.com')
-          .single();
+          .maybeSingle();
           
         if (profile) {
           console.log('✅ Found existing profile:', profile);
@@ -74,10 +74,10 @@ async function testRealEmailSignup() {
           company_name: 'Network Foundation',
           role: 'Founder',
           onboarding_complete: false,
-          is_visible: true
+          profile_visible: true
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (profileError) {
         console.error('❌ Profile creation error:', profileError.message);
@@ -98,7 +98,7 @@ async function testRealEmailSignup() {
       .from('founders')
       .select('*')
       .eq('email', 'hellonetworkapp@gmail.com')
-      .single();
+      .maybeSingle();
 
     if (retrieveError) {
       console.error('❌ Profile retrieval failed:', retrieveError.message);

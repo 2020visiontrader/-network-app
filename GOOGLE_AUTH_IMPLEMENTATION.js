@@ -35,7 +35,7 @@ const signInWithGoogle = async () => {
         .from('founders')
         .select('*')
         .eq('id', data.user.id)
-        .single();
+        .maybeSingle();
 
       if (profileError && profileError.code === 'PGRST116') {
         // User doesn't exist, create profile

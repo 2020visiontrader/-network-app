@@ -37,7 +37,7 @@ export const userApi = {
       .update(profile)
       .eq('id', user?.id)
       .select()
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
     return data;
@@ -48,7 +48,7 @@ export const userApi = {
       .from('users')
       .select('*')
       .eq('id', userId)
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
     return data;
@@ -79,7 +79,7 @@ export const contactsApi = {
       .from('contacts')
       .insert({ ...contact, owner_id: user?.id })
       .select()
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
     return data;
@@ -91,7 +91,7 @@ export const contactsApi = {
       .update(contact)
       .eq('id', id)
       .select()
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
     return data;
@@ -134,7 +134,7 @@ export const introductionsApi = {
       .from('introductions')
       .insert({ ...intro, introduced_by_id: user?.id })
       .select()
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
     return data;
@@ -165,7 +165,7 @@ export const coffeeChatsApi = {
       .from('coffee_chats')
       .insert({ ...chat, user_id: user?.id })
       .select()
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
     return data;
@@ -196,7 +196,7 @@ export const travelApi = {
       .from('travel_checkins')
       .insert({ ...checkin, user_id: user?.id })
       .select()
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
     return data;

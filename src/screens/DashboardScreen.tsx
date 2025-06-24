@@ -63,9 +63,8 @@ export default function DashboardScreen({ navigation }) {
         // Active masterminds
         supabase
           .from('mastermind_members')
-          .select('masterminds!inner(*)')
-          .eq('user_id', user.id)
-          .gte('masterminds.time', new Date().toISOString()),
+          .select('*')
+          .eq('user_id', user.id),
         
         // Coffee chats (pending/confirmed)
         supabase
@@ -234,7 +233,7 @@ export default function DashboardScreen({ navigation }) {
             </View>
           ) : (
             recentActivity.map((activity, index) => (
-              <View key={index} style={styles.activityItem}>
+              <View key={`activity-${index}-${activity.time}`} style={styles.activityItem}>
                 <Text style={styles.activityText}>{activity.text}</Text>
                 <Text style={styles.activityTime}>{activity.time}</Text>
               </View>

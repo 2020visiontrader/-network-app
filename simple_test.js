@@ -63,7 +63,7 @@ async function simpleTest() {
           onboarding_complete: false,
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (profileError) {
         console.error('❌ Profile creation error:', profileError.message);

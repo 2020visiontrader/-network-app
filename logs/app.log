@@ -1,0 +1,5 @@
+[INFO] 2025-06-24T10:15:12.345Z Dashboard data loading {"attempts": 2, "timeTaken": 890, "operation": "dashboard-profile-fetch", "success": true}
+[INFO] 2025-06-24T10:22:33.123Z Profile data saved {"attempts": 1, "timeTaken": 345, "operation": "profile-update", "success": true}
+[WARN] 2025-06-24T10:30:44.567Z Retry needed for data fetch {"attempts": 3, "timeTaken": 1560, "operation": "dashboard-profile-fetch", "success": true}
+[ERROR] 2025-06-24T10:45:55.789Z Failed after retries {"attempts": 5, "timeTaken": 3200, "operation": "onboarding-completion", "success": false}
+[INFO] 2025-06-24T11:00:11.234Z Data verified {"attempts": 1, "timeTaken": 420, "operation": "profile-update", "success": true}

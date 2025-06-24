@@ -21,7 +21,7 @@ export async function GET() {
       .or(`requester_id.eq.${user.id},requested_id.eq.${user.id}`)
       .order('created_at', { ascending: false })
       .limit(1)
-      .single();
+      .maybeSingle();
 
     if (error && error.code !== 'PGRST116') throw error; // PGRST116 is "no rows returned"
 
@@ -54,7 +54,7 @@ export async function POST(request: Request) {
         requester:founders!requester_id(*),
         requested:founders!requested_id(*)
       `)
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
 
@@ -82,7 +82,7 @@ export async function PUT(request: Request) {
       .order('created_at', { ascending: false })
       .limit(1)
       .select()
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
 

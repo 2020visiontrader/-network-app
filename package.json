@@ -13,7 +13,43 @@
     "start:web": "npx serve web-build -p 3000",
     "check-runtime": "./check-runtime.sh",
     "fix-types": "./fix-any-types.sh",
-    "validate": "./validate-typescript.sh"
+    "validate": "./validate-typescript.sh",
+    "validate-env": "node scripts/working/env-validator.js",
+    "pre-test": "./scripts/working/pre-test-checklist.sh",
+    "test-db": "node scripts/working/test-database.js",
+    "test-race": "node scripts/working/test-race-condition-fix.js",
+    "analyze-race": "node scripts/working/analyze-race-conditions.js",
+    "fix-uuids": "node scripts/working/fix-uuid-test-ids.js",
+    "test-race-prevention": "node scripts/working/test-final-race-prevention.js",
+    "test-deterministic": "node scripts/working/test-deterministic.js",
+    "test-robust": "npm run test-race-prevention",
+    "test-advanced-patterns": "node scripts/working/test-advanced-race-patterns.js",
+    "fix-single": "node scripts/working/fix-all-single-calls.js",
+    "qr": "node generate-qr.js",
+    "setup": "./scripts/working/quick-setup.sh",
+    "test-system": "npm run pre-test && npm run test-db && npm run test-robust",
+    "test-cleanup": "node scripts/working/test-cleanup.js",
+    "robust-cleanup": "node scripts/working/robust-test-cleanup.js",
+    "safe-test": "./scripts/working/run-with-cleanup.sh",
+    "robust-test": "chmod +x ./scripts/working/robust-safe-test.sh && ./scripts/working/robust-safe-test.sh",
+    "verify-connection": "node verify-database-connection.js",
+    "verify-schema": "node verify-schema-cache-fix.js",
+    "verify-rls": "node ultimate-rls-verification.js",
+    "pre-test-check": "chmod +x ./pre-test-check.sh && ./pre-test-check.sh",
+    "full-verification": "npm run pre-test-check && npm run verify-schema && npm run verify-rls",
+    "db-verify": "node pre-test-db-verification.js",
+    "pre-db-test": "npm run db-verify && node check-rls-status.js",
+    "full-db-test": "npm run db-verify && node ultimate-rls-verification.js",
+    "permission-check": "node scripts/working/permission-friendly-test.js",
+    "diagnose-permissions": "node scripts/working/permission-diagnostics.js",
+    "emergency-cleanup": "node scripts/working/emergency-cleanup.js",
+    "auth-status": "node scripts/working/auth-for-tests.js --status",
+    "auth-login": "node scripts/working/auth-for-tests.js --email=$npm_config_email --password=$npm_config_password",
+    "auth-create-user": "node scripts/working/auth-for-tests.js --create-test-user",
+    "auth-logout": "node scripts/working/auth-for-tests.js --logout",
+    "auth-test": "chmod +x ./scripts/working/run-authenticated-test.sh && ./scripts/working/run-authenticated-test.sh",
+    "test:persistence": "node verify-persistence.js",
+    "fix:database": "node execute-sql.js final-permission-fix.sql"
   },
   "dependencies": {
     "@expo/metro-runtime": "~5.0.4",
@@ -39,11 +75,12 @@
     "react-dom": "19.0.0",
     "react-hook-form": "^7.49.2",
     "react-native": "0.79.4",
+    "react-native-reanimated": "~3.17.4",
     "react-native-safe-area-context": "5.4.0",
     "react-native-screens": "~4.11.1",
     "react-native-vector-icons": "^10.0.0",
     "react-native-web": "^0.20.0",
-    "react-native-reanimated": "~3.17.4"
+    "uuid": "^9.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
@@ -51,7 +88,8 @@
     "@babel/preset-react": "^7.27.1",
     "@babel/preset-typescript": "^7.27.1",
     "qrcode": "^1.5.3",
-    "qrcode-terminal": "^0.12.0"
+    "qrcode-terminal": "^0.12.0",
+    "uuid": "^11.1.0"
   },
   "private": true
 }

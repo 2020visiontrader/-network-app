@@ -141,7 +141,7 @@ export class SupabaseSchemaValidator {
         .from('founders')
         .select('*')
         .eq('id', userId)
-        .single();
+        .maybeSingle();
       
       // Test update policy on own profile
       const { error: updateError } = await supabase

@@ -23,6 +23,8 @@ const DiscoveryScreen = ({ navigation }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState('all'); // all, role, location
   const [existingConnections, setExistingConnections] = useState(new Set());
+  const [loadState, setLoadState] = useState('loading'); // 'loading' | 'success' | 'error' | 'no-connections'
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     loadFounders();
@@ -33,8 +35,8 @@ const DiscoveryScreen = ({ navigation }) => {
     try {
       const { data, error } = await supabase
         .from('connections')
-        .select('founder_a, founder_b, status')
-        .or(`founder_a.eq.${user.id},founder_b.eq.${user.id}`);
+        .select('founder_a_id, founder_b_id, status')
+        .or(`founder_a_id.eq.${user.id},founder_b_id.eq.${user.id}`);
 
       if (error) throw error;
 
@@ -42,7 +44,7 @@ const DiscoveryScreen = ({ navigation }) => {
       const pendingIds = new Set();
       
       data?.forEach(conn => {
-        const otherId = conn.founder_a === user.id ? conn.founder_b : conn.founder_a;
+        const otherId = conn.founder_a_id === user.id ? conn.founder_b_id : conn.founder_a_id;
         
         if (conn.status === 'accepted') {
           connectedIds.add(otherId);
@@ -57,18 +59,25 @@ const DiscoveryScreen = ({ navigation }) => {
       ]));
     } catch (error) {
       console.error('Error loading connections:', error);
+      // Show user-friendly message instead of crashing
+      if (error?.code === '42703') {
+        console.error('Database schema issue - column does not exist:', error.message);
+        Alert.alert('Update Required', 'We\'re updating this feature. Please try again later.');
+      }
     }
   };
 
   const loadFounders = async () => {
     try {
       setLoading(true);
+      setLoadState('loading');
+      setErrorMessage('');
       
       // First, get all accepted connections
       const { data: connectionsData, error: connectionsError } = await supabase
         .from('connections')
-        .select('founder_a, founder_b')
-        .or(`founder_a.eq.${user.id},founder_b.eq.${user.id}`)
+        .select('founder_a_id, founder_b_id')
+        .or(`founder_a_id.eq.${user.id},founder_b_id.eq.${user.id}`)
         .eq('status', 'accepted');
 
       if (connectionsError) throw connectionsError;
@@ -76,12 +85,20 @@ const DiscoveryScreen = ({ navigation }) => {
       // Get connected user IDs
       const connectedUserIds = new Set();
       connectionsData?.forEach(conn => {
-        if (conn.founder_a === user.id) {
-          connectedUserIds.add(conn.founder_b);
+        if (conn.founder_a_id === user.id) {
+          connectedUserIds.add(conn.founder_b_id);
         } else {
-          connectedUserIds.add(conn.founder_a);
+          connectedUserIds.add(conn.founder_a_id);
         }
       });
+
+      // If user has no connections, set the no-connections state
+      if (connectedUserIds.size === 0) {
+        setFounders([]);
+        setLoadState('no-connections');
+        setLoading(false);
+        return;
+      }
 
       // Only show visible founders who are in the user's network
       let query = supabase
@@ -102,17 +119,8 @@ const DiscoveryScreen = ({ navigation }) => {
         `)
         .neq('id', user.id) // Exclude current user
         .eq('onboarding_complete', true)
-        .eq('profile_visibility', true); // Only show visible profiles
-
-      // If user has connections, filter to show only connected users
-      if (connectedUserIds.size > 0) {
-        query = query.in('id', Array.from(connectedUserIds));
-      } else {
-        // If no connections, show empty array (privacy enforcement)
-        setFounders([]);
-        setLoading(false);
-        return;
-      }
+        .eq('profile_visibility', true) // Only show visible profiles
+        .in('id', Array.from(connectedUserIds));
 
       const { data, error } = await query
         .order('created_at', { ascending: false })
@@ -121,9 +129,18 @@ const DiscoveryScreen = ({ navigation }) => {
       if (error) throw error;
 
       setFounders(data || []);
+      setLoadState('success');
     } catch (error) {
       console.error('Error loading founders:', error);
-      Alert.alert('Error', 'Failed to load founders');
+      setLoadState('error');
+      
+      // Set appropriate error message
+      if (error?.code === '42703') {
+        console.error('Database schema issue - column does not exist:', error.message);
+        setErrorMessage('We\'re updating this feature. Please try again later.');
+      } else {
+        setErrorMessage('Failed to load founders. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -152,8 +169,8 @@ const DiscoveryScreen = ({ navigation }) => {
       const { error } = await supabase
         .from('connections')
         .insert({
-          founder_a: user.id,
-          founder_b: founderId,
+          founder_a_id: user.id,
+          founder_b_id: founderId,
           status: 'pending',
         });
 
@@ -236,7 +253,7 @@ const DiscoveryScreen = ({ navigation }) => {
         {founder.tags && (
           <View style={styles.tagsContainer}>
             {founder.tags.split(',').slice(0, 3).map((tag, index) => (
-              <View key={index} style={styles.tag}>
+              <View key={`${founder.id}-tag-${index}-${tag.trim()}`} style={styles.tag}>
                 <Text style={styles.tagText}>{tag.trim()}</Text>
               </View>
             ))}
@@ -332,18 +349,43 @@ const DiscoveryScreen = ({ navigation }) => {
           <ActivityIndicator size="large" color="#a855f7" />
           <Text style={styles.loadingText}>Loading founders...</Text>
         </View>
+      ) : loadState === 'error' ? (
+        <View style={styles.emptyState}>
+          <Ionicons name="alert-circle-outline" size={64} color="#ef4444" />
+          <Text style={styles.emptyTitle}>Oops! Something went wrong</Text>
+          <Text style={styles.emptyText}>{errorMessage}</Text>
+          <TouchableOpacity 
+            style={styles.retryButton} 
+            onPress={() => {
+              loadFounders();
+              loadExistingConnections();
+            }}
+          >
+            <Text style={styles.retryButtonText}>Try Again</Text>
+          </TouchableOpacity>
+        </View>
+      ) : loadState === 'no-connections' ? (
+        <View style={styles.emptyState}>
+          <Ionicons name="people-outline" size={64} color="#52525b" />
+          <Text style={styles.emptyTitle}>No Network Yet</Text>
+          <Text style={styles.emptyText}>
+            Connect with other founders to see who's in your network. Only connected users are visible for privacy.
+          </Text>
+          <TouchableOpacity 
+            style={styles.primaryButton} 
+            onPress={() => navigation.navigate('Search')}
+          >
+            <Text style={styles.primaryButtonText}>Find Founders</Text>
+          </TouchableOpacity>
+        </View>
       ) : filteredFounders.length === 0 ? (
         <View style={styles.emptyState}>
           <Ionicons name="search-outline" size={64} color="#52525b" />
-          <Text style={styles.emptyTitle}>
-            {founders.length === 0 ? 'No Network Yet' : 'No Results'}
-          </Text>
+          <Text style={styles.emptyTitle}>No Results</Text>
           <Text style={styles.emptyText}>
-            {founders.length === 0 
-              ? 'Connect with other founders to see who\'s in your network. Only connected users are visible for privacy.'
-              : searchQuery 
-                ? 'Try adjusting your search or filters'
-                : 'No founders match your current filters'
+            {searchQuery 
+              ? 'Try adjusting your search or filters'
+              : 'No founders match your current filters'
             }
           </Text>
         </View>
@@ -591,6 +633,32 @@ const styles = StyleSheet.create({
   },
   pendingButtonText: {
     color: '#f9cb40',
+  },
+  retryButton: {
+    backgroundColor: '#a855f7',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+    marginTop: 16,
+  },
+  retryButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#ffffff',
+    textAlign: 'center',
+  },
+  primaryButton: {
+    backgroundColor: '#a855f7',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+    marginTop: 16,
+  },
+  primaryButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#ffffff',
+    textAlign: 'center',
   },
 });
 

@@ -52,9 +52,9 @@ export function useAuth() {
         .from('founders')
         .select('id, email, full_name, onboarding_completed')
         .eq('id', authUser.id)
-        .single()
+        .maybeSingle()
 
-      if (error && error.code !== 'PGRST116') {
+      if (error) {
         console.error('Error fetching founder:', error)
         setLoading(false)
         return

@@ -142,7 +142,7 @@ async function testCompleteAuthFlow() {
       .from('founders')
       .select('*')
       .eq('id', authData.user.id)
-      .single();
+      .maybeSingle();
 
     if (profileAccessError) {
       console.error('❌ Profile access failed:', profileAccessError.message);

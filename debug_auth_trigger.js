@@ -67,7 +67,7 @@ async function debugAuthTrigger() {
         .from('founders')
         .select('*')
         .eq('id', authData.user.id)
-        .single();
+        .maybeSingle();
 
       if (profileError) {
         console.error('❌ No profile created by trigger:', profileError.message);

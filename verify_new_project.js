@@ -110,7 +110,7 @@ async function testFounderApplicationFlow() {
       .from('founder_applications')
       .insert([testApp])
       .select()
-      .single();
+      .maybeSingle();
     
     if (!appError) {
       console.log('  ✅ Founder application created successfully in new project');
@@ -123,7 +123,7 @@ async function testFounderApplicationFlow() {
         .from('founder_applications')
         .select('application_status, email')
         .eq('email', testApp.email)
-        .single();
+        .maybeSingle();
       
       if (statusData && statusData.application_status === 'pending') {
         console.log('  ✅ Application status correctly set to "pending"');

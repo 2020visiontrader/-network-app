@@ -71,7 +71,7 @@ async function testCompleteFlow() {
             .from('founders')
             .select('*')
             .eq('id', authData.user.id)
-            .single();
+            .maybeSingle();
 
         if (retrieveError) {
             console.log(`❌ User retrieval failed: ${retrieveError.message}`);

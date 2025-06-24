@@ -48,7 +48,7 @@ async function quickUserTest() {
           onboarding_complete: false,
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (profileError) {
         console.error('❌ Profile creation failed:', profileError.message);

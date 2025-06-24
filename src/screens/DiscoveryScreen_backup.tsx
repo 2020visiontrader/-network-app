@@ -69,13 +69,13 @@ const DiscoveryScreen = ({ navigation }) => {
           location,
           tags,
           onboarding_complete,
-          is_visible,
+          profile_visible,
           avatar_url,
           created_at
         `)
         .neq('id', user.id) // Exclude current user
         .eq('onboarding_complete', true)
-        .eq('is_visible', true) // Only show visible profiles
+        .eq('profile_visible', true) // Only show visible profiles
         .order('created_at', { ascending: false });
 
       const { data, error } = await query.limit(50);

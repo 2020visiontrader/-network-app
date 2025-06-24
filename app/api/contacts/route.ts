@@ -56,7 +56,7 @@ export async function POST(request: Request) {
         founder_a:founders!founder_a_id(*),
         founder_b:founders!founder_b_id(*)
       `)
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
 

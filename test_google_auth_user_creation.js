@@ -41,7 +41,7 @@ async function testGoogleAuthFlow() {
       .from('founder_applications')
       .select('application_status')
       .eq('email', mockGoogleUser.email)
-      .single();
+      .maybeSingle();
     
     if (error && error.code === 'PGRST116') {
       console.log('✅ No existing application found (expected for new user)');
@@ -74,7 +74,7 @@ async function testGoogleAuthFlow() {
         onboarding_completed: false
       })
       .select()
-      .single();
+      .maybeSingle();
     
     if (error) {
       if (error.message.includes('duplicate key')) {
@@ -85,7 +85,7 @@ async function testGoogleAuthFlow() {
           .from('founders')
           .select('id, full_name, onboarding_completed')
           .eq('id', mockGoogleUser.id)
-          .single();
+          .maybeSingle();
         
         if (selectError) {
           console.log('❌ Error selecting existing founder:', selectError.message);
@@ -113,7 +113,7 @@ async function testGoogleAuthFlow() {
       .from('founders')
       .select('onboarding_completed')
       .eq('id', mockGoogleUser.id)
-      .single();
+      .maybeSingle();
     
     if (founderError) {
       console.log('❌ Founder lookup error:', founderError.message);

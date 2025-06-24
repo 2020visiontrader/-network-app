@@ -166,7 +166,7 @@ async function testFounderApplicationFlow() {
       .from('founder_applications')
       .insert([testApp])
       .select()
-      .single();
+      .maybeSingle();
     
     if (!error) {
       console.log('  ✅ Founder application created successfully');

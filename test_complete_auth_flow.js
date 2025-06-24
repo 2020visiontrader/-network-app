@@ -36,7 +36,7 @@ async function testCompleteAuthFlow() {
       .from('founders')
       .select('onboarding_completed')
       .eq('id', mockUser.id)
-      .single();
+      .maybeSingle();
     
     if (findError && findError.code !== 'PGRST116') {
       console.log('❌ Error checking founder:', findError.message);
@@ -133,7 +133,7 @@ async function testCompleteAuthFlow() {
       .from('founders')
       .select('*')
       .eq('id', mockUser.id)
-      .single();
+      .maybeSingle();
     
     if (dashboardError) {
       console.log('❌ Error accessing dashboard data:', dashboardError.message);
@@ -174,7 +174,7 @@ async function testCompleteAuthFlow() {
         .from('founders')
         .select('onboarding_completed')
         .eq('id', mockUser.id)
-        .single();
+        .maybeSingle();
       
       console.log(`✅ Scenario: onboarding=${scenario.onboarding} → redirect to ${scenario.expected}`);
     }

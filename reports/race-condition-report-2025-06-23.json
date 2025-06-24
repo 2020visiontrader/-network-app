@@ -1,0 +1,58 @@
+{
+  "analyzedAt": "2025-06-23T18:32:13.368Z",
+  "totalLogEntries": 5,
+  "overallStats": {
+    "operations": 3,
+    "totalCalls": 5,
+    "operationsWithRaceConditions": 2
+  },
+  "operationStats": {
+    "dashboard-profile-fetch": {
+      "totalCalls": 2,
+      "avgAttempts": 2.5,
+      "avgTime": 1225,
+      "maxTime": 1560,
+      "raceConditionRate": 100,
+      "recommendedSettings": {
+        "maxRetries": 5,
+        "retryDelay": 780
+      }
+    },
+    "profile-update": {
+      "totalCalls": 2,
+      "avgAttempts": 1,
+      "avgTime": 382.5,
+      "maxTime": 420,
+      "raceConditionRate": 0,
+      "recommendedSettings": {
+        "maxRetries": 2,
+        "retryDelay": 500
+      }
+    },
+    "onboarding-completion": {
+      "totalCalls": 1,
+      "avgAttempts": 5,
+      "avgTime": 3200,
+      "maxTime": 3200,
+      "raceConditionRate": 100,
+      "recommendedSettings": {
+        "maxRetries": 8,
+        "retryDelay": 1600
+      }
+    }
+  },
+  "recommendations": [
+    {
+      "priority": "HIGH",
+      "operation": "dashboard-profile-fetch",
+      "issue": "High race condition rate (100.0%)",
+      "suggestion": "Increase retry count to at least 5 and verify write operations more thoroughly"
+    },
+    {
+      "priority": "HIGH",
+      "operation": "onboarding-completion",
+      "issue": "High race condition rate (100.0%)",
+      "suggestion": "Increase retry count to at least 8 and verify write operations more thoroughly"
+    }
+  ]
+}

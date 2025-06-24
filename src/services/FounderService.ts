@@ -1,6 +1,7 @@
 // Founder API Service
 // Real production service for founder-related database operations
 import { supabase } from './supabase';
+import { verifyWriteWithRetry, measureDbOperation } from '../lib/db-utils';
 
 interface FounderData {
   id?: string;
@@ -196,8 +197,11 @@ export class FounderService {
     }
   }
 
-  static async completeOnboarding(founderId, onboardingData) {
+  static async completeOnboarding(founderId: string, onboardingData: any): Promise<ServiceResponse<FounderData>> {
     try {
+      console.log('🔄 Starting onboarding completion for user:', founderId);
+      console.log('📝 Onboarding data:', onboardingData);
+
       const updates = {
         ...onboardingData,
         onboarding_completed: true,
@@ -205,12 +209,90 @@ export class FounderService {
         updated_at: new Date().toISOString()
       };
 
-      return await this.updateFounder(founderId, updates);
+      // Use measureDbOperation to track performance
+      return await measureDbOperation('completeOnboarding', async () => {
+        // First try upsert to handle both creation and update cases
+        const { data: upserted, error: upsertError } = await supabase
+          .from('founders')
+          .upsert({
+            id: founderId,
+            ...updates
+          })
+          .select()
+          .maybeSingle(); // 🔄 prevent throw if 0 rows returned
+
+        let finalResult = null;
+
+        if (upsertError) {
+          console.warn('🔁 Upsert failed, trying fallback update', upsertError.message);
+          
+          // Fallback to update existing record
+          const { data: updated, error: updateError } = await supabase
+            .from('founders')
+            .update(updates)
+            .eq('id', founderId)
+            .select()
+            .maybeSingle();
+
+          if (updateError) {
+            console.error('❌ Both upsert and update failed:', updateError.message);
+            return {
+              success: false,
+              error: updateError.message,
+              code: updateError.code
+            };
+          }
+
+          console.log('✅ Fallback update successful:', updated);
+          finalResult = updated;
+        } else {
+          console.log('✅ Upsert successful:', upserted);
+          finalResult = upserted;
+        }
+
+        // 🚨 CRITICAL: Verify write completed before returning - now using our utility function
+        console.log('🔍 Verifying onboarding write completed...');
+        
+        // Use our new verification utility with retry
+        const { data: verifiedData, success, attempts, timeTaken } = await verifyWriteWithRetry(
+          supabase,
+          'founders',
+          'id',
+          founderId,
+          (data: any) => data.onboarding_completed === true, // Verification criteria
+          {
+            maxRetries: 5,
+            retryDelay: 500,
+            logPrefix: '🔄 Onboarding Verification'
+          }
+        );
+
+        if (!success || !verifiedData) {
+          console.error('❌ Failed to verify onboarding completion after multiple attempts', { attempts, timeTaken });
+          return {
+            success: false,
+            error: 'Profile was updated but could not verify completion. Please refresh and try again.',
+            code: 'VERIFICATION_FAILED'
+          };
+        }
+
+        console.log('✅ Onboarding completion verified:', { attempts, timeTaken, data: verifiedData });
+        
+        return {
+          success: true,
+          data: finalResult || verifiedData,
+          message: `Onboarding completed and verified successfully in ${timeTaken}ms after ${attempts} attempts`
+        };
+      });
     } catch (error) {
+      console.error('💥 Unexpected error in completeOnboarding:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorCode = error && typeof error === 'object' && 'code' in error ? (error as { code: string }).code : undefined;
+      
       return {
         success: false,
-        error: error.message,
-        code: error.code
+        error: errorMessage,
+        code: errorCode
       };
     }
   }

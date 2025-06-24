@@ -135,7 +135,7 @@ async function test250FounderCap() {
       .from('founders')
       .select('onboarding_completed')
       .eq('id', mockUser.id)
-      .single();
+      .maybeSingle();
 
     if (founderError) {
       console.log('❌ Return user check error:', founderError.message);

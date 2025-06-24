@@ -22,7 +22,7 @@ export default function CoffeeChatStatus() {
           setStatus(data);
           setCity(data.city);
           setDate(data.availability_date);
-          setIsVisible(data.is_visible);
+          setIsVisible(data.profile_visible);
         }
       } catch (error) {
         console.error('Error fetching coffee chat status:', error);
@@ -60,7 +60,7 @@ export default function CoffeeChatStatus() {
         body: JSON.stringify({
           city,
           availability_date: date,
-          is_visible: isVisible,
+          profile_visible: isVisible,
         }),
       });
 
